@@ -1,7 +1,8 @@
-import Server from './classes/server';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import { createConnection } from 'typeorm';
+import Server from './classes/server';
+import routes from "./routes";
 
 const server = new Server();
 
@@ -18,6 +19,9 @@ var corsOptions = {
     credentials: true
 };
 server.app.use(cors(corsOptions));
+
+// Rutas
+server.app.use('/api/', routes);
 
 // Inciar el servidor
 server.start (() => {

@@ -7,6 +7,5 @@
     "database": "bd_fuchicovid",
     "syncronize": true,
     "logging": false,
-    "entities": ["src/models/**/*.ts"],
-    "migrations": ["src/migrations/**/*.ts"]
+    "entities": ["dist/entities/*.js"]
 }
