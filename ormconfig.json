@@ -1,0 +1,12 @@
+{
+    "type": "postgres",
+    "host": "localhost",
+    "port": "5432",
+    "username": "postgres",
+    "password": "postgres",
+    "database": "bd_fuchicovid",
+    "syncronize": true,
+    "logging": false,
+    "entities": ["src/models/**/*.ts"],
+    "migrations": ["src/migrations/**/*.ts"]
+}
