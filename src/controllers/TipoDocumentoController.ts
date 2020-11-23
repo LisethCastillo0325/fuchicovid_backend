@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { getRepository, FindManyOptions } from "typeorm";
-import { HTTP_STATUS_CODE_OK, HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_CREATED } from '../global/statuscode';
-import { TipoIdentificacion } from '../entities/TipoIdentificacion';
+import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
+import { TipoIdentificacion } from '../entities/TipoIdentificacion';
+import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 
 class TipoIdentificacionController {
 
