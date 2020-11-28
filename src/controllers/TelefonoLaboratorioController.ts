@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
+import { Laboratorio } from '../entities/Laboratorio';
 import { TelefonoLaboratorio } from '../entities/TelefonoLaboratorio';
 import { TipoTelefono } from '../entities/TipoTelefono';
-import { Laboratorio} from '../entities/Laboratorio';
 import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 
 class TelefonoLaboratorioController {
@@ -130,7 +130,7 @@ class TelefonoLaboratorioController {
             const results = repositoryTelefonoLaboratorio.save(telefonoLaboratorio);
 
             // Se envia resultado 
-            TelefonoLaboratorioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "telefono actualizado actualizada correctamente");
+            TelefonoLaboratorioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "telefono actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
