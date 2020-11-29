@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import direccionPersona from "./direccionPersona";
 import eps from "./eps";
 import funcionario from "./funcionario";
 import laboratorio from "./laboratorio";
 import medicamento from "./medicamento";
+import medicamentoLaboratorio from "./medicamentoLaboratorio";
 import persona from "./persona";
 import telefonoLaboratorio from "./telefonoLaboratorio";
 import personaTelefonos from "./telefonoPersona";
@@ -10,7 +12,6 @@ import tipoContacto from "./tipoContacto";
 import tipoIdentificacion from "./tipoIdentificacion";
 import tipoTelefono from "./tipoTelefono";
 import universidad from "./universidad";
-import direccionPersona from "./direccionPersona"
 const routes = Router();
 
 //Rutas
@@ -26,4 +27,5 @@ routes.use('/persona', persona);
 routes.use('/funcionario',funcionario);
 routes.use('/tel-persona',personaTelefonos);
 routes.use('/dir-persona',direccionPersona);
+routes.use('/med-lab',medicamentoLaboratorio);
 export default routes;

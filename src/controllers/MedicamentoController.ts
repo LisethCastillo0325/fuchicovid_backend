@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
-import { getRepository, FindManyOptions } from "typeorm";
-import { HTTP_STATUS_CODE_OK, HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_CREATED } from '../global/statuscode';
-import { Medicamento } from '../entities/Medicamento';
+import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
+import { Medicamento } from '../entities/Medicamento';
+import { MedicamentoLaboratorio } from '../entities/MedicamentoLaboratorio';
+import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 
 class MedicamentoController {
 
@@ -56,15 +57,36 @@ class MedicamentoController {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
             let { nombreMedicamento } : Medicamento = req.body;
-
+            let { idLaboratorio,stock } =req.body;
             // Se construye objeto
             let medicamento = new Medicamento();
+            let medLab=new MedicamentoLaboratorio();
             medicamento.nombreMedicamento = nombreMedicamento.toUpperCase();
-
+        
             // Se obtiene instancia de la base de datos
             const repositoryMedicamento = getRepository(Medicamento);
             // Se guarda el objeto
-            const results = repositoryMedicamento.save(medicamento);
+            const results = await repositoryMedicamento.save(medicamento).then(
+                function()
+                {
+                    //retorna el id del medicamento creado para usar en la relacion medicamento-laboratorio
+                    const repositoryMedicamento = getRepository(Medicamento);
+                    repositoryMedicamento.createQueryBuilder("medicamento")
+                     .where(`medicamento.nombreMedicamento ilike '${nombreMedicamento}'`).getRawOne().then(
+                         function(value){ 
+                            //guarda informacion en la relacion medicamento laboratorio
+                            const repositoryMedicamentoLab=getRepository(MedicamentoLaboratorio);
+                            medLab.idMedicamento=value["medicamento_id_medicamento"];
+                            medLab.stockMedicamento=stock;
+                            medLab.idLaboratorio=idLaboratorio;
+                            repositoryMedicamentoLab.save(medLab);}
+                     )
+                     
+                    
+                }
+            )
+            
+            
             // Se envia resultado 
             MedicamentoController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Medicamento creado correctamente");
 
