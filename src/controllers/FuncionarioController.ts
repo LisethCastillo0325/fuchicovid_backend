@@ -57,38 +57,40 @@ class FuncionarioController {
         try {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let { numeroIdentificacion } =req.body;
-            var idPersona;
-            const repositoryCiudad = getRepository(Persona);
-            await PersonaController.create(req,res);
-            //await new Promise(resolve => setTimeout(resolve, 5000));
+            let { nombre,numeroIdentificacion,idTipoIdentificacion } : Persona = req.body;
 
-            idPersona=await repositoryCiudad.createQueryBuilder("persona")
-            .where(`persona.numero_identificacion = '${numeroIdentificacion}'`).getRawOne()
-            //.then((value)=>console.log(value));
+           
+            // Se construye objeto
+           
+            let persona = new Persona();
+            persona.nombre = nombre;
+            persona.numeroIdentificacion=numeroIdentificacion;
+            persona.idTipoIdentificacion=idTipoIdentificacion;
+            const repositoryPersona = getRepository(Persona);
             
-
-            //idPersona devuelve unidentified 
-
-                //console.log(idPersona);
-                // Se construye objeto
-            let funcionario = new Funcionario();
-            funcionario.idPersona = idPersona["persona_id"];
-                
-    
-                // Se obtiene instancia de la base de datos
-            const repositoryFuncionario = getRepository(Funcionario);
-                // Se guarda el objeto
-            const results = repositoryFuncionario.save(funcionario);
-        
-            console.log("hecho");
-            // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta en 
-            // el controlller de persona 
-            //FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario creado correctamente");
+            await repositoryPersona.save(persona)           
+            .then(function()
+            {
+             const repositoryCiudad = getRepository(Persona);
+             repositoryCiudad.createQueryBuilder("persona")
+            .where(`persona.numero_identificacion = '${numeroIdentificacion}'`).getRawOne()
+            .then(function(value){
+            
+                let funcionario = new Funcionario();
+                funcionario.idPersona = value["persona_id"];
+                    // Se obtiene instancia de la base de datos
+                const repositoryFuncionario = getRepository(Funcionario);
+                    // Se guarda el objeto
+                const results = repositoryFuncionario.save(funcionario);
+                // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
+                FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario creado correctamente");
+            })});
+            
+            
 
         } catch (error) {
              // Se envia información sobre el error
-            //FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
 
     }
@@ -116,17 +118,17 @@ class FuncionarioController {
             PersonaController.update(req,res);
 
             // Se actualiza el objeto
-            const results = repositoryFuncionario.save(funcionario);
+            //const results = repositoryFuncionario.save(funcionario);
 
             // Se envia resultado 
-            FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
+            //FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+                //FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-                FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+               // FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
