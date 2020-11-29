@@ -16,6 +16,14 @@ export class TipoIdentificacion {
   @Column("character varying", { name: "nombre", nullable: true })
   nombre: string | null;
 
+  @Column("character varying", {
+    name: "estado",
+    nullable: true,
+    length: 8,
+    default: () => "'ACTIVO'",
+  })
+  estado: string | null;
+
   @OneToMany(() => Persona, (persona) => persona.idTipoIdentificacion)
   personas: Persona[];
 }
