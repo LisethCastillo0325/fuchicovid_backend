@@ -10,24 +10,13 @@ import PersonaController from './PersonaController';
 class FuncionarioController {
 
     static getAll = async (req: Request, res: Response) => {
-        // Se obtiene instancia de la base de datos
-        const repositoryFuncionario = getRepository(Funcionario);
+          
         try {
-            
-            const data = await repositoryFuncionario.find();
-            var ids=[];
-            if(data.length>0 )
-            {
-                data.forEach(function(value){ids.push(value["idPersona"]) })
-                var strIds="(".concat(ids.join()).concat(")");
-                const repositoryPersona = getRepository(Persona);
-
-                //trae los datos de las personas que son integrantes
-                repositoryPersona.createQueryBuilder("persona")
-                .where(`persona.id in ${strIds}`).getRawMany()
-                .then(function(value){ FuncionarioController.sendResponse(res, value);})
-            }
-            else FuncionarioController.sendResponse(res, data);
+            const repositoryPersona = getRepository(Persona);
+            repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(Funcionario,'funcionario',"funcionario.idPersona=persona.id")
+            .getRawMany().then(function(value){
+            FuncionarioController.sendResponse(res, value);
+            });    
            
         } catch (error) {
             // Se envia información sobre el error
@@ -40,23 +29,18 @@ class FuncionarioController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryFuncionario = getRepository(Funcionario);
+        const repositoryPersona = getRepository(Persona);
         try {
             
-             await repositoryFuncionario.findOne(id)
+            await repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(Funcionario,'funcionario',"funcionario.idPersona=persona.id")
+            .where(`persona.id = ${id}`).getRawOne()
             .then(function(value)
             {
                 if(value!=undefined)
                 {
-                    const repositoryPersona = getRepository(Persona);
-                    //trae los datos de las personas que son integrantes
-                    repositoryPersona.createQueryBuilder("persona")
-                    .where(`persona.id = ${value["idPersona"]}`).getRawOne()
-                    .then(function(value){
-                        // Se envia datos solicitados 
-                        FuncionarioController.sendResponse(res, value);
-                    
-                    });
+                
+
+                    FuncionarioController.sendResponse(res, value);
                     
                 }
                 else

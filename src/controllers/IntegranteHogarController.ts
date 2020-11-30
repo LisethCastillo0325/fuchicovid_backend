@@ -11,27 +11,14 @@ class IntegranteHogarController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
-        const repositoryIntegranteHogar = getRepository(IntegranteHogar);
         try {
             
-            var data = await repositoryIntegranteHogar.find()
-            // .then(function(value)
-            //{console.log(value);});
-            var ids=[];
-            if(data.length>0 )
-            {
-                data.forEach(function(value){ids.push(value["idPersona"]) })
-                var strIds="(".concat(ids.join()).concat(")");
-                const repositoryPersona = getRepository(Persona);
-
-                //trae los datos de las personas que son integrantes
-                repositoryPersona.createQueryBuilder("persona")
-                .where(`persona.id in ${strIds}`).getRawMany()
-                .then(function(value){  IntegranteHogarController.sendResponse(res, value);})
-
-            }
-            else IntegranteHogarController.sendResponse(res,data);
-            // Se envia datos solicitados 
+            const repositoryPersona=getRepository(Persona);
+           
+            repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(IntegranteHogar,'integrante',"integrante.idPersona=persona.id")
+            .getRawMany().then(function(value){
+            IntegranteHogarController.sendResponse(res, value);
+            });  
           
         } catch (error) {
             // Se envia información sobre el error
@@ -44,30 +31,26 @@ class IntegranteHogarController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryIntegranteHogar = getRepository(IntegranteHogar);
+        const repositoryPersona = getRepository(Persona);
         try {
             
-            await repositoryIntegranteHogar.findOne(id)
+            await repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(IntegranteHogar,'integrante',"integrante.idPersona=persona.id")
+            .where(`persona.id = ${id}`).getRawOne()
             .then(function(value)
             {
                 if(value!=undefined)
                 {
-                const repositoryPersona = getRepository(Persona);
-                //trae los datos de las personas que son integrantes
-                repositoryPersona.createQueryBuilder("persona")
-                .where(`persona.id = ${value["idPersona"]}`).getRawOne()
-                .then(function(value){
-                    // Se envia datos solicitados 
+                
                     IntegranteHogarController.sendResponse(res, value);
-                });
-            }
-            else
-            {
-                let error = new DataNotFoundError();
-                error.message = `Integrante de hogar con id ${id} no encontrado`;
-                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
-                throw error;
-            }
+                }
+            
+                else
+                {
+                    let error = new DataNotFoundError();
+                    error.message = `Integrante de hogar con id ${id} no encontrado`;
+                    error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+                    throw error;
+                }
                 
             });
 

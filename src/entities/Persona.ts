@@ -18,11 +18,11 @@ import { ProfesionalSalud } from "./ProfesionalSalud";
 import { TipoIdentificacion } from "./TipoIdentificacion";
 import { Usuario } from "./Usuario";
 
+@Entity("persona", { schema: "public" })
 @Index("persona_pkey", ["id"], { unique: true })
 @Index("persona_numero_identificacion_key", ["numeroIdentificacion"], {
   unique: true,
 })
-@Entity("persona", { schema: "public" })
 export class Persona {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;

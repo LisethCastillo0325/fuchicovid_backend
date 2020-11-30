@@ -11,40 +11,15 @@ class PacienteController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
-        const repositoryPaciente = getRepository(Paciente);
+        
         try {
             
-            const data = await repositoryPaciente.find({
-                relations:["idCiudadContagio"]
-               });
-            var ids=[];
-          
-            if(data.length>0 )
-            {
-                data.forEach(function(value){ids.push(value["idPersona"]) })
-                var strIds="(".concat(ids.join()).concat(")");
-                const repositoryPersona = getRepository(Persona);
-
-                //trae los datos de las personas que son integrantes
-                repositoryPersona.createQueryBuilder("persona")
-                .where(`persona.id in ${strIds}`).getRawMany()
-                .then(function(value){ 
-                    value.forEach((val,index)=>
-                    {
-                       for(var i=1;i<Object.keys(data[index]).length;i++)
-                       {
-                           for(var key in data[index])
-                           {
-                               
-                               if(key.localeCompare("idPersona")!=0)
-                                val[key]=data[index][key];
-                           }
-                       }
-                    }) 
-                    PacienteController.sendResponse(res, value);
-                })
-            }
-            else PacienteController.sendResponse(res, data);
+            const repositoryPersona=getRepository(Persona);
+           
+            repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
+            .getRawMany().then(function(value){
+            PacienteController.sendResponse(res, value);
+            });    
            
         } catch (error) {
             // Se envia información sobre el error
@@ -57,32 +32,22 @@ class PacienteController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryPaciente = getRepository(Paciente);
+        const repositoryPersona = getRepository(Persona);
         try {
-            
-             await repositoryPaciente.findOne({ where: {idPersona: id}, relations: ["idCiudadContagio"]})
+            await repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
+            .where(`persona.id = ${id}`).getRawOne()
             .then(function(value)
             {
                 if(value!=undefined)
                 {
-                    const repositoryPersona = getRepository(Persona);
-                    
-                    repositoryPersona.createQueryBuilder("persona")
-                    .where(`persona.id = ${value["idPersona"]}`).getRawOne()
-                    .then(function(respuesta){
-                        for(var key in value)
-                        {
-                            if(key.localeCompare("idPersona")!=0)
-                            respuesta[key]=value[key];
-                        }
-                        // Se envia datos solicitados 
-                        PacienteController.sendResponse(res, respuesta);
-                    });
+                    // Se envia datos solicitados 
+                    PacienteController.sendResponse(res, value);
+                
                 }
                 else 
                 { 
                     let error = new DataNotFoundError();
-                    error.message = `Profesional de salud con id ${id} no encontrado`;
+                    error.message = `Paciente con id ${id} no encontrado`;
                     error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                     throw error;
                 }
@@ -179,7 +144,7 @@ class PacienteController {
             paciente.estadoEnfermedad=estadoEnfermedad;
               
                     // Se guarda el objeto
-            const results = repositoryPaciente.save(paciente);
+            repositoryPaciente.save(paciente);
             // Se actualiza el objeto
             //const results = repositoryPaciente.save(paciente);
 

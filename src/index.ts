@@ -15,7 +15,7 @@ createConnection({ type: 'postgres',
      ssl: {
         rejectUnauthorized: false
       },
-    entities: ["dist/entities/*.js"]
+    entities: ["dist/entities/**/*.js"]
     })
 // BodyParser
 server.app.use( bodyParser.urlencoded({ extended: true }) );

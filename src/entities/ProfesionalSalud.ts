@@ -5,15 +5,16 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
+  OneToOne
 } from "typeorm";
-import { PacienteControles } from "./PacienteControles";
 import { EntidadPromotoraSalud } from "./EntidadPromotoraSalud";
+import { PacienteControles } from "./PacienteControles";
 import { Persona } from "./Persona";
 import { Universidad } from "./Universidad";
 
-@Index("profesional_salud_pkey", ["idPersona"], { unique: true })
 @Entity("profesional_salud", { schema: "public" })
+@Index("profesional_salud_pkey", ["idPersona"], { unique: true })
+
 export class ProfesionalSalud {
   @Column("integer", { primary: true, name: "id_persona" })
   idPersona: number;

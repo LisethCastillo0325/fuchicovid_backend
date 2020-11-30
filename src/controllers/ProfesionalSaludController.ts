@@ -11,41 +11,14 @@ class ProfesionalSaludController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
-        const repositoryProfesionalSalud = getRepository(ProfesionalSalud);
+        
         try {
-            
-            const data = await repositoryProfesionalSalud.find({
-                relations:["idEps","idUniversidad"]
-               });
-            var ids=[];
-            console.log(data);
-          
-            if(data.length>0 )
-            {
-                data.forEach(function(value){ids.push(value["idPersona"]) })
-                var strIds="(".concat(ids.join()).concat(")");
-                const repositoryPersona = getRepository(Persona);
+            const repositoryPersona = getRepository(Persona);
+            repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(ProfesionalSalud,'profesional',"profesional.idPersona=persona.id")
+            .getRawMany().then(function(value){
+            ProfesionalSaludController.sendResponse(res, value);
+            });    
 
-                //trae los datos de las personas que son integrantes
-                repositoryPersona.createQueryBuilder("persona")
-                .where(`persona.id in ${strIds}`).getRawMany()
-                .then(function(value){
-                    value.forEach((val,index)=>
-                    {
-                       for(var i=1;i<Object.keys(data[index]).length;i++)
-                       {
-                           for(var key in data[index])
-                           {
-                                if(key.localeCompare("idPersona")!=0)
-                                val[key]=data[index][key];
-                           }
-                       }
-                    }) 
-                    ProfesionalSaludController.sendResponse(res, value);
-                })
-            }
-            else ProfesionalSaludController.sendResponse(res, data);
-           
         } catch (error) {
             // Se envia información sobre el error
             ProfesionalSaludController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
@@ -57,29 +30,19 @@ class ProfesionalSaludController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryProfesionalSalud = getRepository(ProfesionalSalud);
+        const repositoryPersona = getRepository(Persona);
         try {
             
-             await repositoryProfesionalSalud.findOne({ where: {idPersona: id}, relations: ["idEps","idUniversidad"]})
+             await repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(ProfesionalSalud,'profesional',"profesional.idPersona=persona.id")
+            .where(`persona.id = ${id}`).getRawOne()
             .then(function(value)
             {
                 if(value!=undefined)
                 {
                     
-                    const repositoryPersona = getRepository(Persona);
-                    
-                    repositoryPersona.createQueryBuilder("persona")
-                    .where(`persona.id = ${value["idPersona"]}`).getRawOne()
-                    .then(function(respuesta){
-                        for(var key in value)
-                        {
-                            if(key.localeCompare("idPersona")!=0)
-                            respuesta[key]=value[key];
-                        }
-                        // Se envia datos solicitados 
-                        ProfesionalSaludController.sendResponse(res, respuesta);
-                    });
+                        ProfesionalSaludController.sendResponse(res, value);
                 }
+                
                 else 
                 { 
                     let error = new DataNotFoundError();

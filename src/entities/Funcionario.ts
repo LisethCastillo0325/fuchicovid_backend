@@ -1,8 +1,7 @@
 import { Column, Entity, Index, JoinColumn, OneToOne } from "typeorm";
 import { Persona } from "./Persona";
-
-@Index("funcionario_pkey", ["idPersona"], { unique: true })
 @Entity("funcionario", { schema: "public" })
+@Index("funcionario_pkey", ["idPersona"], { unique: true })
 export class Funcionario {
   @Column("integer", { primary: true, name: "id_persona" })
   idPersona: number;
