@@ -4,13 +4,14 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn
 } from "typeorm";
 import { IntegranteHogar } from "./IntegranteHogar";
 import { Paciente } from "./Paciente";
 
-@Index("relacion_paciente_integrante_pkey", ["id"], { unique: true })
 @Entity("relacion_paciente_integrante", { schema: "public" })
+@Index("relacion_paciente_integrante_pkey", ["id"], { unique: true })
+
 export class RelacionPacienteIntegrante {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
