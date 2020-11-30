@@ -2,19 +2,21 @@ import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
-import { Funcionario } from '../entities/Funcionario';
+import { IntegranteHogar } from '../entities/IntegranteHogar';
 import { Persona } from '../entities/Persona';
 import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 import PersonaController from './PersonaController';
 
-class FuncionarioController {
+class IntegranteHogarController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
-        const repositoryFuncionario = getRepository(Funcionario);
+        const repositoryIntegranteHogar = getRepository(IntegranteHogar);
         try {
             
-            const data = await repositoryFuncionario.find();
+            var data = await repositoryIntegranteHogar.find()
+            // .then(function(value)
+            //{console.log(value);});
             var ids=[];
             
             data.forEach(function(value){ids.push(value["idPersona"]) })
@@ -24,12 +26,14 @@ class FuncionarioController {
             //trae los datos de las personas que son integrantes
             repositoryPersona.createQueryBuilder("persona")
             .where(`persona.id in ${strIds}`).getRawMany()
-            .then(function(value){ FuncionarioController.sendResponse(res, value);})
+            .then(function(value){  IntegranteHogarController.sendResponse(res, value);})
 
            
+            // Se envia datos solicitados 
+          
         } catch (error) {
             // Se envia información sobre el error
-            FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            IntegranteHogarController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
     }
 
@@ -38,10 +42,10 @@ class FuncionarioController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryFuncionario = getRepository(Funcionario);
+        const repositoryIntegranteHogar = getRepository(IntegranteHogar);
         try {
             
-            const funcionario = await repositoryFuncionario.findOne(id)
+            await repositoryIntegranteHogar.findOne(id)
             .then(function(value)
             {
                 const repositoryPersona = getRepository(Persona);
@@ -58,16 +62,20 @@ class FuncionarioController {
                         throw error;
                     }
                     // Se envia datos solicitados 
-                    FuncionarioController.sendResponse(res, value);
+                    IntegranteHogarController.sendResponse(res, value);
                 });
+
+                
             });
+
+            
 
         } catch (error) {
             // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+                IntegranteHogarController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-                FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+                IntegranteHogarController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
@@ -91,26 +99,26 @@ class FuncionarioController {
             await repositoryPersona.save(persona)           
             .then(function()
             {
-             const repositoryCiudad = getRepository(Persona);
-             repositoryCiudad.createQueryBuilder("persona")
+             const repositoryPersona = getRepository(Persona);
+             repositoryPersona.createQueryBuilder("persona")
             .where(`persona.numero_identificacion = '${numeroIdentificacion}'`).getRawOne()
             .then(function(value){
             
-                let funcionario = new Funcionario();
-                funcionario.idPersona = value["persona_id"];
+                let integranteHogar = new IntegranteHogar();
+                integranteHogar.idPersona = value["persona_id"];
                     // Se obtiene instancia de la base de datos
-                const repositoryFuncionario = getRepository(Funcionario);
+                const repositoryIntegranteHogar = getRepository(IntegranteHogar);
                     // Se guarda el objeto
-                const results = repositoryFuncionario.save(funcionario);
+                const results = repositoryIntegranteHogar.save(integranteHogar);
                 // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
-                FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario creado correctamente");
+                IntegranteHogarController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Integrante de hogar creado correctamente");
             })});
             
             
-
+             
         } catch (error) {
              // Se envia información sobre el error
-            FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            IntegranteHogarController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
 
     }
@@ -122,15 +130,15 @@ class FuncionarioController {
             const id: string = req.params.id;
     
             // Se obtiene instancia de la base de datos
-            const repositoryFuncionario = getRepository(Persona);
+            const repositoryIntegranteHogar = getRepository(Persona);
 
             
-            const funcionario = await repositoryFuncionario.findOne(id);
+            const integranteHogar = await repositoryIntegranteHogar.findOne(id);
 
             // Si no ecunetra el registro se lanza un error
-            if(funcionario === undefined){
+            if(integranteHogar === undefined){
                 let error = new DataNotFoundError();
-                error.message = `Funcionario con id ${id} no encontrado`;
+                error.message = `Integrante de hogar con id ${id} no encontrado`;
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
@@ -138,17 +146,17 @@ class FuncionarioController {
             PersonaController.update(req,res);
 
             // Se actualiza el objeto
-            //const results = repositoryFuncionario.save(funcionario);
+            //const results = repositoryIntegranteHogar.save(integranteHogar);
 
             // Se envia resultado 
-            //FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
+            //IntegranteHogarController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "IntegranteHogar actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                //FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+                //IntegranteHogarController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               // FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+               // IntegranteHogarController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
@@ -159,4 +167,4 @@ class FuncionarioController {
     }
 }
 
-export default FuncionarioController;
+export default IntegranteHogarController;

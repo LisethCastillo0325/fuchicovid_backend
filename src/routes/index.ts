@@ -12,6 +12,7 @@ import tipoContacto from "./tipoContacto";
 import tipoIdentificacion from "./tipoIdentificacion";
 import tipoTelefono from "./tipoTelefono";
 import universidad from "./universidad";
+import integrante from "./integranteHogar";
 const routes = Router();
 
 //Rutas
@@ -28,4 +29,5 @@ routes.use('/funcionario',funcionario);
 routes.use('/tel-persona',personaTelefonos);
 routes.use('/dir-persona',direccionPersona);
 routes.use('/med-lab',medicamentoLaboratorio);
+routes.use('/integranteH',integrante);
 export default routes;

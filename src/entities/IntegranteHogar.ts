@@ -10,7 +10,7 @@ import { ContactoEmergencia } from "./ContactoEmergencia";
 import { CorreoIntegranteHogar } from "./CorreoIntegranteHogar";
 import { Persona } from "./Persona";
 import { RelacionPacienteIntegrante } from "./RelacionPacienteIntegrante";
-import { TelefonoIntegranteHogar } from "./TelefonoIntegranteHogar";
+import { PersonaTelefonos } from "./PersonaTelefonos";
 
 @Index("integrante_hogar_pkey", ["idPersona"], { unique: true })
 @Entity("integrante_hogar", { schema: "public" })
@@ -41,8 +41,8 @@ export class IntegranteHogar {
   relacionPacienteIntegrantes: RelacionPacienteIntegrante[];
 
   @OneToMany(
-    () => TelefonoIntegranteHogar,
-    (telefonoIntegranteHogar) => telefonoIntegranteHogar.idIntegrante
+    () => PersonaTelefonos,
+    (personaTelefonos) => personaTelefonos.idPersona
   )
-  telefonoIntegranteHogars: TelefonoIntegranteHogar[];
+  personaTelefonos: PersonaTelefonos[];
 }
