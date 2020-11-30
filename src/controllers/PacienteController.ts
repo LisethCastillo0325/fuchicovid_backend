@@ -2,20 +2,23 @@ import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
-import { Funcionario } from '../entities/Funcionario';
+import { Paciente } from '../entities/Paciente';
 import { Persona } from '../entities/Persona';
 import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 import PersonaController from './PersonaController';
 
-class FuncionarioController {
+class PacienteController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
-        const repositoryFuncionario = getRepository(Funcionario);
+        const repositoryPaciente = getRepository(Paciente);
         try {
             
-            const data = await repositoryFuncionario.find();
+            const data = await repositoryPaciente.find({
+                relations:["idCiudadContagio"]
+               });
             var ids=[];
+          
             if(data.length>0 )
             {
                 data.forEach(function(value){ids.push(value["idPersona"]) })
@@ -25,13 +28,27 @@ class FuncionarioController {
                 //trae los datos de las personas que son integrantes
                 repositoryPersona.createQueryBuilder("persona")
                 .where(`persona.id in ${strIds}`).getRawMany()
-                .then(function(value){ FuncionarioController.sendResponse(res, value);})
+                .then(function(value){ 
+                    value.forEach((val,index)=>
+                    {
+                       for(var i=1;i<Object.keys(data[index]).length;i++)
+                       {
+                           for(var key in data[index])
+                           {
+                               
+                               if(key.localeCompare("idPersona")!=0)
+                                val[key]=data[index][key];
+                           }
+                       }
+                    }) 
+                    PacienteController.sendResponse(res, value);
+                })
             }
-            else FuncionarioController.sendResponse(res, data);
+            else PacienteController.sendResponse(res, data);
            
         } catch (error) {
             // Se envia información sobre el error
-            FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
     }
 
@@ -40,41 +57,43 @@ class FuncionarioController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryFuncionario = getRepository(Funcionario);
+        const repositoryPaciente = getRepository(Paciente);
         try {
             
-             await repositoryFuncionario.findOne(id)
+             await repositoryPaciente.findOne({ where: {idPersona: id}, relations: ["idCiudadContagio"]})
             .then(function(value)
             {
                 if(value!=undefined)
                 {
                     const repositoryPersona = getRepository(Persona);
-                    //trae los datos de las personas que son integrantes
+                    
                     repositoryPersona.createQueryBuilder("persona")
                     .where(`persona.id = ${value["idPersona"]}`).getRawOne()
-                    .then(function(value){
+                    .then(function(respuesta){
+                        for(var key in value)
+                        {
+                            if(key.localeCompare("idPersona")!=0)
+                            respuesta[key]=value[key];
+                        }
                         // Se envia datos solicitados 
-                        FuncionarioController.sendResponse(res, value);
-                    
+                        PacienteController.sendResponse(res, respuesta);
                     });
-                    
                 }
-                else
-                {
+                else 
+                { 
                     let error = new DataNotFoundError();
-                    error.message = `Integrante de hogar con id ${id} no encontrado`;
+                    error.message = `Profesional de salud con id ${id} no encontrado`;
                     error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                     throw error;
                 }
-            
             });
 
         } catch (error) {
             // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+                PacienteController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-                FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+                PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
@@ -85,7 +104,7 @@ class FuncionarioController {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
             let { nombre,numeroIdentificacion,idTipoIdentificacion } : Persona = req.body;
-
+            let{idDoctorEncargado,latitud,longitud,numeroIntegrantesHogar,idCiudadContagio,estadoEnfermedad} : Paciente=req.body;
            
             // Se construye objeto
            
@@ -103,21 +122,27 @@ class FuncionarioController {
             .where(`persona.numero_identificacion = '${numeroIdentificacion}'`).getRawOne()
             .then(function(value){
             
-                let funcionario = new Funcionario();
-                funcionario.idPersona = value["persona_id"];
+                let paciente = new Paciente();
+                paciente.idPersona = value["persona_id"];
+                paciente.idDoctorEncargado=idDoctorEncargado;
+                paciente.latitud=latitud;
+                paciente.longitud=longitud;
+                paciente.numeroIntegrantesHogar=numeroIntegrantesHogar;
+                paciente.idCiudadContagio=idCiudadContagio;
+                paciente.estadoEnfermedad=estadoEnfermedad;
                     // Se obtiene instancia de la base de datos
-                const repositoryFuncionario = getRepository(Funcionario);
+                const repositoryPaciente = getRepository(Paciente);
                     // Se guarda el objeto
-                const results = repositoryFuncionario.save(funcionario);
+                const results = repositoryPaciente.save(paciente);
                 // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
-                FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario creado correctamente");
+                PacienteController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Paciente creado correctamente");
             })});
             
             
 
         } catch (error) {
              // Se envia información sobre el error
-            FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
 
     }
@@ -129,33 +154,44 @@ class FuncionarioController {
             const id: string = req.params.id;
     
             // Se obtiene instancia de la base de datos
-            const repositoryFuncionario = getRepository(Persona);
+            const repositoryPersona= getRepository(Persona);
 
             
-            const funcionario = await repositoryFuncionario.findOne(id);
+            const persona = await repositoryPersona.findOne(id);
 
             // Si no ecunetra el registro se lanza un error
-            if(funcionario === undefined){
+            if(persona === undefined){
                 let error = new DataNotFoundError();
-                error.message = `Funcionario con id ${id} no encontrado`;
+                error.message = `Paciente con id ${id} no encontrado`;
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
 
             PersonaController.update(req,res);
-
+            const repositoryPaciente = getRepository(Paciente);
+            const paciente = await repositoryPaciente.findOne(id);
+            let{idDoctorEncargado,latitud,longitud,numeroIntegrantesHogar,idCiudadContagio,estadoEnfermedad} : Paciente=req.body;
+            paciente.idDoctorEncargado=idDoctorEncargado;
+            paciente.latitud=latitud;
+            paciente.longitud=longitud;
+            paciente.numeroIntegrantesHogar=numeroIntegrantesHogar;
+            paciente.idCiudadContagio=idCiudadContagio;
+            paciente.estadoEnfermedad=estadoEnfermedad;
+              
+                    // Se guarda el objeto
+            const results = repositoryPaciente.save(paciente);
             // Se actualiza el objeto
-            //const results = repositoryFuncionario.save(funcionario);
+            //const results = repositoryPaciente.save(paciente);
 
             // Se envia resultado 
-            //FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
+            //PacienteController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Paciente actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                //FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+                //PacienteController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               // FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+               // PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
@@ -166,4 +202,4 @@ class FuncionarioController {
     }
 }
 
-export default FuncionarioController;
+export default PacienteController;

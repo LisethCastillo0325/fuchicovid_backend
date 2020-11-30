@@ -18,17 +18,19 @@ class IntegranteHogarController {
             // .then(function(value)
             //{console.log(value);});
             var ids=[];
-            
-            data.forEach(function(value){ids.push(value["idPersona"]) })
-            var strIds="(".concat(ids.join()).concat(")");
-            const repositoryPersona = getRepository(Persona);
+            if(data.length>0 )
+            {
+                data.forEach(function(value){ids.push(value["idPersona"]) })
+                var strIds="(".concat(ids.join()).concat(")");
+                const repositoryPersona = getRepository(Persona);
 
-            //trae los datos de las personas que son integrantes
-            repositoryPersona.createQueryBuilder("persona")
-            .where(`persona.id in ${strIds}`).getRawMany()
-            .then(function(value){  IntegranteHogarController.sendResponse(res, value);})
+                //trae los datos de las personas que son integrantes
+                repositoryPersona.createQueryBuilder("persona")
+                .where(`persona.id in ${strIds}`).getRawMany()
+                .then(function(value){  IntegranteHogarController.sendResponse(res, value);})
 
-           
+            }
+            else IntegranteHogarController.sendResponse(res,data);
             // Se envia datos solicitados 
           
         } catch (error) {
@@ -48,23 +50,24 @@ class IntegranteHogarController {
             await repositoryIntegranteHogar.findOne(id)
             .then(function(value)
             {
+                if(value!=undefined)
+                {
                 const repositoryPersona = getRepository(Persona);
-                console.log(value);
                 //trae los datos de las personas que son integrantes
                 repositoryPersona.createQueryBuilder("persona")
                 .where(`persona.id = ${value["idPersona"]}`).getRawOne()
                 .then(function(value){
-                    // Si no ecunetra el registro se lanza un error
-                    if(value === undefined){
-                        let error = new DataNotFoundError();
-                        error.message = `Integrante de hogar con id ${id} no encontrado`;
-                        error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
-                        throw error;
-                    }
                     // Se envia datos solicitados 
                     IntegranteHogarController.sendResponse(res, value);
                 });
-
+            }
+            else
+            {
+                let error = new DataNotFoundError();
+                error.message = `Integrante de hogar con id ${id} no encontrado`;
+                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+                throw error;
+            }
                 
             });
 
