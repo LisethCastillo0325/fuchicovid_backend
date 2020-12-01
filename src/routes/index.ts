@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import contactoEmergencia from "./contactoEmergencia";
+import correoIntegrante from "./correoIntegrante";
 import direccionPersona from "./direccionPersona";
 import eps from "./eps";
 import funcionario from "./funcionario";
@@ -36,4 +38,6 @@ routes.use('/integranteH',integrante);
 routes.use('/profesionalS',profesional);
 routes.use('/paciente',paciente);
 routes.use('/relacion',relacion);
+routes.use('/correo',correoIntegrante);
+routes.use('/contactoEmergencia',contactoEmergencia);
 export default routes;

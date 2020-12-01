@@ -1,13 +1,14 @@
 import { Router } from "express";
-import IntegranteHogarController from "../controllers/IntegranteHogarController";
+import CorreoIntegranteController from "../controllers/CorreoIntegranteController";
 
 
 const router = Router();
 
 // Rutas para tipo identificación
-router.get('/', IntegranteHogarController.getAll);
-router.get('/:id', IntegranteHogarController.getById);
-router.post('/', IntegranteHogarController.create);
-router.put('/:id', IntegranteHogarController.update);
+router.get('/', CorreoIntegranteController.getAll);
+router.get('/:id', CorreoIntegranteController.getById);
+router.get('/persona/:id', CorreoIntegranteController.getByPersonaId);
+router.post('/', CorreoIntegranteController.create);
+router.put('/:id', CorreoIntegranteController.update);
 
 export default router;

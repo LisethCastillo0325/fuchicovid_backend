@@ -15,7 +15,7 @@ class RelacionPacienteIntegranteController {
             
             const data = await repositoryRelacionPacienteIntegrante.find(
                 {
-                    relations:["idPaciente","idIntegrante"]
+                    relations:["idPaciente","idIntegrante","idTipoContacto"]
                 });
             // Se envia datos solicitados 
             RelacionPacienteIntegranteController.sendResponse(res, data);
@@ -36,7 +36,7 @@ class RelacionPacienteIntegranteController {
             
             const relacionPacienteIntegrante = await repositoryRelacionPacienteIntegrante.find(
             {
-                relations:["idPaciente","idIntegrante"],
+                relations:["idPaciente","idIntegrante","idTipoContacto"],
                 where: [{id:id}]
             });
             // Si no ecunetra el registro se lanza un error
@@ -69,7 +69,7 @@ class RelacionPacienteIntegranteController {
             
             const relacion=await repositoryRelacionPacienteIntegrante.find(
             {
-                relations:["idPaciente","idIntegrante"],
+                relations:["idPaciente","idIntegrante","idTipoContacto"],
                 where: [{idPaciente:id},{idIntegrante:id}]
             });
             //.then(function(value){console.log(value)});
@@ -98,7 +98,7 @@ class RelacionPacienteIntegranteController {
         try {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let { idPaciente,idIntegrante,parentesco } : RelacionPacienteIntegrante = req.body;
+            let { idPaciente,idIntegrante,idTipoContacto } : RelacionPacienteIntegrante = req.body;
            
            
             // Se construye objeto
@@ -106,7 +106,7 @@ class RelacionPacienteIntegranteController {
             let relacionPacienteIntegrante = new RelacionPacienteIntegrante();
             relacionPacienteIntegrante.idPaciente=idPaciente;
             relacionPacienteIntegrante.idIntegrante=idIntegrante;
-            relacionPacienteIntegrante.parentesco=parentesco
+            relacionPacienteIntegrante.idTipoContacto=idTipoContacto;
             const repositoryRelacionPacienteIntegrante = getRepository(RelacionPacienteIntegrante);
             
             await repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante)           
@@ -137,10 +137,10 @@ class RelacionPacienteIntegranteController {
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
-            let { idPaciente,idIntegrante,parentesco } : RelacionPacienteIntegrante = req.body;
+            let { idPaciente,idIntegrante,idTipoContacto } : RelacionPacienteIntegrante = req.body;
             relacionPacienteIntegrante.idPaciente=idPaciente;
             relacionPacienteIntegrante.idIntegrante=idIntegrante;
-            relacionPacienteIntegrante.parentesco=parentesco
+            relacionPacienteIntegrante.idTipoContacto=idTipoContacto;
 
             await repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante)        
 
