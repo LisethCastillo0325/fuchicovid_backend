@@ -3,7 +3,7 @@ import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import { RelacionPacienteIntegrante } from '../entities/RelacionPacienteIntegrante';
-import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
+import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 
 class RelacionPacienteIntegranteController {
 
@@ -142,20 +142,18 @@ class RelacionPacienteIntegranteController {
             relacionPacienteIntegrante.idIntegrante=idIntegrante;
             relacionPacienteIntegrante.idTipoContacto=idTipoContacto;
 
-            await repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante)        
+            const results=await repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante)        
 
-            // Se actualiza el objeto
-            //const results = repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante);
 
             // Se envia resultado 
-            //RelacionPacienteIntegranteController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "RelacionPacienteIntegrante actualizado correctamente");
+            RelacionPacienteIntegranteController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "RelacionPacienteIntegrante actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                //RelacionPacienteIntegranteController.sendResponse(res, null, error.statusCode, false, error.message);
+                RelacionPacienteIntegranteController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               // RelacionPacienteIntegranteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+               RelacionPacienteIntegranteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }

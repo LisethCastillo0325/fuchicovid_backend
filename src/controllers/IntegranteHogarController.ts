@@ -129,7 +129,7 @@ class IntegranteHogarController {
                 throw error;
             }
 
-            PersonaController.update(req,res);
+           PersonaController.update(req,res);
 
             // Se actualiza el objeto
             //const results = repositoryIntegranteHogar.save(integranteHogar);

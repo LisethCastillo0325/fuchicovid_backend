@@ -2,26 +2,26 @@ import { Request, Response } from "express";
 import { getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
-import { ContactoEmergencia } from '../entities/ContactoEmergencia';
+import { RegistroDosis } from '../entities/RegistroDosis';
 import { HTTP_STATUS_CODE_OK, HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_CREATED } from '../global/statuscode';
 
-class ContactoEmergenciaController {
+class RegistroDosisController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
         
-        const repositoryContactoEmergencia = getRepository(ContactoEmergencia);
+        const repositoryRegistroDosis = getRepository(RegistroDosis);
         try {
             
-            const data = await repositoryContactoEmergencia.find(
+            const data = await repositoryRegistroDosis.find(
                 {
-                    relations:["relacionPacienteIntegrante"]
+                    relations:["idMedicamentoLaboratorio"]
                 });
             // Se envia datos solicitados 
-            ContactoEmergenciaController.sendResponse(res, data);
+            RegistroDosisController.sendResponse(res, data);
         } catch (error) {
             // Se envia información sobre el error
-            ContactoEmergenciaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            RegistroDosisController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
     }
 
@@ -31,30 +31,30 @@ class ContactoEmergenciaController {
         const id: string = req.params.id;
 
         // Se obtiene instancia de la base de datos
-        const repositoryContactoEmergencia = getRepository(ContactoEmergencia);
+        const repositoryRegistroDosis = getRepository(RegistroDosis);
         try {
             
-            const contactoEmergencia = await repositoryContactoEmergencia.find(
+            const registroDosis = await repositoryRegistroDosis.find(
             {
-                relations:["relacionPacienteIntegrante"],
+                relations:["idMedicamentoLaboratorio"],
                 where: [{id:id}]
             });
             // Si no ecunetra el registro se lanza un error
-            if(contactoEmergencia === undefined){
+            if(registroDosis === undefined){
                 let error = new DataNotFoundError();
-                error.message = `Contacto de emergencia con id ${id} no encontrado`;
+                error.message = `Dosis con id ${id} no encontrado`;
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
             // Se envia datos solicitados 
-            ContactoEmergenciaController.sendResponse(res, contactoEmergencia);
+            RegistroDosisController.sendResponse(res, registroDosis);
 
         } catch (error) {
             // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                ContactoEmergenciaController.sendResponse(res, null, error.statusCode, false, error.message);
+                RegistroDosisController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-                ContactoEmergenciaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+                RegistroDosisController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
@@ -65,20 +65,23 @@ class ContactoEmergenciaController {
         try {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let {  relacionPacienteIntegrante } : ContactoEmergencia = req.body;
+            let {dosis,idMedicamentoLaboratorio} : RegistroDosis = req.body;
            
            
             // Se construye objeto
            
-            let contactoEmergencia = new ContactoEmergencia();
-            contactoEmergencia.relacionPacienteIntegrante=relacionPacienteIntegrante;
-            const repositoryContactoEmergencia = getRepository(ContactoEmergencia);
+            let registroDosis = new RegistroDosis();
+            registroDosis.dosis=dosis
+            registroDosis.idMedicamentoLaboratorio=idMedicamentoLaboratorio;
+           
+            const repositoryRegistroDosis = getRepository(RegistroDosis);
             
-            await repositoryContactoEmergencia.save(contactoEmergencia)           
+            const results=await repositoryRegistroDosis.save(registroDosis)           
+            RegistroDosisController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "RegistroDosis actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
-            ContactoEmergenciaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            RegistroDosisController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
 
     }
@@ -90,33 +93,36 @@ class ContactoEmergenciaController {
             const id: string = req.params.id;
     
             // Se obtiene instancia de la base de datos
-            const repositoryContactoEmergencia = getRepository(ContactoEmergencia);
+            const repositoryRegistroDosis = getRepository(RegistroDosis);
 
             
-            const contactoEmergencia = await repositoryContactoEmergencia.findOne(id);
+            const registroDosis = await repositoryRegistroDosis.findOne(id);
 
             // Si no ecunetra el registro se lanza un error
-            if(contactoEmergencia === undefined){
+            if(registroDosis === undefined){
                 let error = new DataNotFoundError();
-                error.message = `Relacion con id ${id} no encontrado`;
+                error.message = `Control con id ${id} no encontrado`;
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
-            let {  relacionPacienteIntegrante } : ContactoEmergencia = req.body;
-            contactoEmergencia.relacionPacienteIntegrante=relacionPacienteIntegrante;
-            const results=await repositoryContactoEmergencia.save(contactoEmergencia)        
-
+            let {dosis,idMedicamentoLaboratorio} : RegistroDosis = req.body;
             
+            registroDosis.dosis=dosis
+            registroDosis.idMedicamentoLaboratorio=idMedicamentoLaboratorio;
+    
+            const results=await repositoryRegistroDosis.save(registroDosis)        
+
+        
 
             // Se envia resultado 
-            ContactoEmergenciaController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "ContactoEmergencia actualizado correctamente");
+            RegistroDosisController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "RegistroDosis actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                ContactoEmergenciaController.sendResponse(res, null, error.statusCode, false, error.message);
+                RegistroDosisController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               ContactoEmergenciaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+               RegistroDosisController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }
@@ -127,4 +133,4 @@ class ContactoEmergenciaController {
     }
 }
 
-export default ContactoEmergenciaController;
+export default RegistroDosisController;

@@ -127,19 +127,15 @@ class FuncionarioController {
             }
 
             PersonaController.update(req,res);
-
-            // Se actualiza el objeto
-            //const results = repositoryFuncionario.save(funcionario);
-
             // Se envia resultado 
-            //FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
+            // FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                //FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+                // FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               // FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            //    FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
         }
     }

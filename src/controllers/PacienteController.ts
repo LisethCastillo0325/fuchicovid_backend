@@ -132,7 +132,7 @@ class PacienteController {
                 throw error;
             }
 
-            PersonaController.update(req,res);
+           
             const repositoryPaciente = getRepository(Paciente);
             const paciente = await repositoryPaciente.findOne(id);
             let{idDoctorEncargado,latitud,longitud,numeroIntegrantesHogar,idCiudadContagio,estadoEnfermedad} : Paciente=req.body;
@@ -144,7 +144,8 @@ class PacienteController {
             paciente.estadoEnfermedad=estadoEnfermedad;
               
                     // Se guarda el objeto
-            repositoryPaciente.save(paciente);
+            await repositoryPaciente.save(paciente);
+            await PersonaController.update(req,res);
             // Se actualiza el objeto
             //const results = repositoryPaciente.save(paciente);
 
