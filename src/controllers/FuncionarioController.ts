@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
+import { getRepository, Like } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
+import PaginateData from '../classes/PaginateData';
 import { Funcionario } from '../entities/Funcionario';
 import { Persona } from '../entities/Persona';
 import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 import PersonaController from './PersonaController';
-
 class FuncionarioController {
 
     static getAll = async (req: Request, res: Response) => {
@@ -104,6 +104,81 @@ class FuncionarioController {
             FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
 
+    }
+
+    static getAllPaginated = async (req: Request, res: Response) => {
+        ///console.log('getAllPaginated ->  body: ', req.body);
+        try {
+            const where = FuncionarioController.getWhere(req);
+            const data = await PaginateData.paginator(req, Funcionario, {
+                where,
+                order: {
+                    nombre: "ASC" 
+                }
+            });
+            FuncionarioController.sendResponse(res, data);
+        } catch (error) {
+            FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+        }
+    }
+
+    private static getWhere (req: Request) {
+        let where: any = {};
+        if(req.body.filters !== undefined){
+            if(req.body.filters.nombre !== null && req.body.filters.nombre !== ''){
+                let nombre : string = req.body.filters.nombre;
+                console.log('where nombre: ', nombre);
+                where.nombre = Like("%"+ nombre.toUpperCase() +"%");
+            }
+            if(req.body.filters.estado !== null && req.body.filters.estado !== ''){
+                let estado : string = req.body.filters.estado;
+                console.log('where estado: ', estado);
+                where.estado = estado.toUpperCase();
+            }
+        }
+        return where;
+    }
+
+    static inactivateAndActivate = async (req: Request, res: Response) => {
+        try {
+             
+            // Se obtiene el id que llega por parametro en la url
+            const id: string = req.params.id;
+
+            // se obtiene los datos enviados por parametro
+            let { estado } : Funcionario = req.body;
+
+            // Se obtiene instancia de la base de datos
+            const repositoryFuncionario = getRepository(Funcionario);
+
+            // se obtiene el tipo de identificación por el id
+            const tipoIdentificacion = await repositoryFuncionario.findOne(id);
+
+            // Si no ecunetra el registro se lanza un error
+            if(tipoIdentificacion === undefined){
+                let error = new DataNotFoundError();
+                error.message = `Funcionario con id ${id} no encontrado`;
+                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+                throw error;
+            }
+
+            // se actualiza los datos del tipo de identificación
+            tipoIdentificacion.estado = estado.toUpperCase();
+
+            // Se actualiza el objeto
+            const results = repositoryFuncionario.save(tipoIdentificacion);
+
+            // Se envia resultado 
+            FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, `Funcionario ${estado.toUpperCase()} correctamente`);
+
+        } catch (error) {
+             // Se envia información sobre el error
+            if(error instanceof DataNotFoundError){
+                FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
+            }else{
+                FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            }
+        }
     }
 
     static update = async (req: Request, res: Response) => {
