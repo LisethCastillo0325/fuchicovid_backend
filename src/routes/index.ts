@@ -22,6 +22,9 @@ import tipoContacto from "./tipoContacto";
 import tipoIdentificacion from "./tipoIdentificacion";
 import tipoTelefono from "./tipoTelefono";
 import universidad from "./universidad";
+import ciudad from "./ciudad";
+import pais from "./pais";
+import departamento from "./departamento";
 const routes = Router();
 
 //Rutas
@@ -48,4 +51,7 @@ routes.use('/controles',controles);
 routes.use('/items',item);
 routes.use('/dosis',dosis);
 routes.use('/registro_info',registro);
+routes.use('/ciudad',ciudad);
+routes.use('/pais',pais);
+routes.use('/departamento',departamento);
 export default routes;
