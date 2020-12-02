@@ -11,14 +11,14 @@ const server = new Server();
 //createConnection();
 // Inicia la conexion a la base de datos de heroku
 createConnection(
-    // { 
-    //     type: 'postgres', 
-    //     url: keys.posgresqlURI, 
-    //     ssl: {
-    //         rejectUnauthorized: false
-    //     },
-    //     entities: ["dist/entities/*.js"]
-    // }
+    { 
+        type: 'postgres', 
+        url: keys.posgresqlURI, 
+        ssl: {
+            rejectUnauthorized: false
+        },
+        entities: ["dist/entities/*.js"]
+    }
 );
 // BodyParser
 server.app.use( bodyParser.urlencoded({ extended: true }) );

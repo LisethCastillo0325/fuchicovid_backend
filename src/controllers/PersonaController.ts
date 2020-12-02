@@ -55,7 +55,7 @@ class PersonaController {
         try {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let { nombre,numeroIdentificacion,idTipoIdentificacion } : Persona = req.body;
+            let { nombre,numeroIdentificacion,idTipoIdentificacion,fechaNacimiento } : Persona = req.body;
 
            
             // Se construye objeto
@@ -64,6 +64,7 @@ class PersonaController {
             persona.nombre = nombre;
             persona.numeroIdentificacion=numeroIdentificacion;
             persona.idTipoIdentificacion=idTipoIdentificacion;
+            persona.fechaNacimiento;
             
             
 
@@ -88,7 +89,7 @@ class PersonaController {
             const id: string = req.params.id;
 
             // se obtiene los datos enviados por parametro
-            let { nombre,numeroIdentificacion,idTipoIdentificacion} : Persona = req.body;
+            let { nombre,numeroIdentificacion,idTipoIdentificacion,fechaNacimiento} : Persona = req.body;
             // Se obtiene instancia de la base de datos
             const repositoryPersona = getRepository(Persona);
 
@@ -108,6 +109,7 @@ class PersonaController {
             persona.nombre = nombre;
             persona.numeroIdentificacion=numeroIdentificacion;
             persona.idTipoIdentificacion=idTipoIdentificacion;
+            persona.fechaNacimiento=fechaNacimiento;
             // Se actualiza el objeto
             const results = repositoryPersona.save(persona);
 

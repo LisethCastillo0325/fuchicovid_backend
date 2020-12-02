@@ -68,7 +68,7 @@ class FuncionarioController {
         try {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let { nombre,numeroIdentificacion,idTipoIdentificacion } : Persona = req.body;
+            let { nombre,numeroIdentificacion,idTipoIdentificacion,fechaNacimiento } : Persona = req.body;
 
            
             // Se construye objeto
@@ -77,6 +77,7 @@ class FuncionarioController {
             persona.nombre = nombre;
             persona.numeroIdentificacion=numeroIdentificacion;
             persona.idTipoIdentificacion=idTipoIdentificacion;
+            persona.fechaNacimiento=fechaNacimiento;
             const repositoryPersona = getRepository(Persona);
             
             await repositoryPersona.save(persona)           
