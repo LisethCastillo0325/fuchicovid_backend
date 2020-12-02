@@ -10,13 +10,16 @@ const server = new Server();
 // Incia la conexion a la base de datos local
 //createConnection();
 // Inicia la conexion a la base de datos de heroku
-createConnection({ type: 'postgres', 
-     url: keys.posgresqlURI, 
-     ssl: {
-        rejectUnauthorized: false
-      },
-    entities: ["dist/entities/*.js"]
-    })
+createConnection(
+    // { 
+    //     type: 'postgres', 
+    //     url: keys.posgresqlURI, 
+    //     ssl: {
+    //         rejectUnauthorized: false
+    //     },
+    //     entities: ["dist/entities/*.js"]
+    // }
+);
 // BodyParser
 server.app.use( bodyParser.urlencoded({ extended: true }) );
 server.app.use( bodyParser.json() );

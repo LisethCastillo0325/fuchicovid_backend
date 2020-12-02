@@ -9,5 +9,5 @@ export class Funcionario {
 
   @OneToOne(() => Persona, (persona) => persona.funcionario)
   @JoinColumn([{ name: "id_persona", referencedColumnName: "id" }])
-  idPersona2: Persona;
+  idPersona: Persona;
 }

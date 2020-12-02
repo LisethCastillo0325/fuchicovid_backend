@@ -20,7 +20,7 @@ export class Departamento {
   @Column("character varying", { name: "nombre", nullable: true, unique: true })
   nombre: string | null;
 
-  @OneToMany(() => Ciudad, (ciudad) => ciudad.idDepartamento)
+  @OneToMany(() => Ciudad, (ciudad) => ciudad.idDepartamento2)
   ciudads: Ciudad[];
 
   @ManyToOne(() => Pais, (pais) => pais.departamentos)

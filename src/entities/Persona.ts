@@ -6,16 +6,16 @@ import {
   ManyToOne,
   OneToMany,
   OneToOne,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Funcionario } from "./Funcionario";
 import { IntegranteHogar } from "./IntegranteHogar";
 import { Paciente } from "./Paciente";
+import { TipoIdentificacion } from "./TipoIdentificacion";
 import { PersonaDireccion } from "./PersonaDireccion";
 import { PersonaTelefonos } from "./PersonaTelefonos";
 import { ProcesoRegistros } from "./ProcesoRegistros";
 import { ProfesionalSalud } from "./ProfesionalSalud";
-import { TipoIdentificacion } from "./TipoIdentificacion";
 import { Usuario } from "./Usuario";
 
 @Index("persona_pkey", ["id"], { unique: true })
@@ -37,6 +37,9 @@ export class Persona {
     length: 10,
   })
   numeroIdentificacion: string | null;
+
+  @Column("date", { name: "fecha_nacimiento" })
+  fechaNacimiento: string;
 
   @OneToOne(() => Funcionario, (funcionario) => funcionario.idPersona)
   funcionario: Funcionario;

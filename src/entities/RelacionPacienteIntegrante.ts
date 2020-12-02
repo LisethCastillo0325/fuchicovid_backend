@@ -1,5 +1,4 @@
 import {
-  Column,
   Entity,
   Index,
   JoinColumn,
@@ -8,15 +7,13 @@ import {
 } from "typeorm";
 import { IntegranteHogar } from "./IntegranteHogar";
 import { Paciente } from "./Paciente";
+import { Parentesco } from "./Parentesco";
 
 @Index("relacion_paciente_integrante_pkey", ["id"], { unique: true })
 @Entity("relacion_paciente_integrante", { schema: "public" })
 export class RelacionPacienteIntegrante {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
-
-  @Column("character varying", { name: "parentesco", nullable: true })
-  parentesco: string | null;
 
   @ManyToOne(
     () => IntegranteHogar,
@@ -28,4 +25,11 @@ export class RelacionPacienteIntegrante {
   @ManyToOne(() => Paciente, (paciente) => paciente.relacionPacienteIntegrantes)
   @JoinColumn([{ name: "id_paciente", referencedColumnName: "idPersona" }])
   idPaciente: Paciente;
+
+  @ManyToOne(
+    () => Parentesco,
+    (parentesco) => parentesco.relacionPacienteIntegrantes
+  )
+  @JoinColumn([{ name: "id_parentesco", referencedColumnName: "id" }])
+  idParentesco: Parentesco;
 }
