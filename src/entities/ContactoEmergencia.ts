@@ -4,33 +4,26 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { IntegranteHogar } from "./IntegranteHogar";
-import { TipoContacto } from "./TipoContacto";
 
-@Index("contacto_emergencia_pkey", ["id"], { unique: true })
+import { RelacionPacienteIntegrante } from "./RelacionPacienteIntegrante";
 @Entity("contacto_emergencia", { schema: "public" })
+@Index("contacto_emergencia_pkey", ["id"], { unique: true })
+
 export class ContactoEmergencia {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
 
-  @Column("integer", { name: "id_paciente", nullable: true })
-  idPaciente: number | null;
 
-  @ManyToOne(
-    () => IntegranteHogar,
-    (integranteHogar) => integranteHogar.contactoEmergencias
+  @OneToOne(
+    () => RelacionPacienteIntegrante,
+    (relacionPacienteIntegrante) => relacionPacienteIntegrante.contactoEmergencia
   )
   @JoinColumn([
-    { name: "id_integrante_hogar", referencedColumnName: "idPersona" },
+    { name: "id_relacion_paciente_integrante", referencedColumnName: "id" },
   ])
-  idIntegranteHogar: IntegranteHogar;
+  relacionPacienteIntegrante: RelacionPacienteIntegrante;
 
-  @ManyToOne(
-    () => TipoContacto,
-    (tipoContacto) => tipoContacto.contactoEmergencias
-  )
-  @JoinColumn([{ name: "id_tipo_contacto", referencedColumnName: "id" }])
-  idTipoContacto: TipoContacto;
 }
