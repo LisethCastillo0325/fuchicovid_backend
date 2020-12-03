@@ -199,7 +199,7 @@ class FuncionarioController {
             console.log(req.params.id);
             // Se obtiene instancia de la base de datos
             
-            const funcionario : Funcionario = await queryRunner.manager.findOne(id);
+            const funcionario : Funcionario = await queryRunner.manager.findOne(Funcionario,id);
             console.log(funcionario);
 
             // Si no ecunetra el registro se lanza un error
@@ -209,11 +209,11 @@ class FuncionarioController {
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
-
-            PersonaController.update(req, res, queryRunner);
-
+            
+            await PersonaController.update(req, res, queryRunner);
             // commit transaction now:
             await queryRunner.commitTransaction();
+            await queryRunner.release();
             // Se envia resultado 
             FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
 

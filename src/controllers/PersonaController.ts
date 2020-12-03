@@ -3,7 +3,7 @@ import { getRepository, QueryRunner } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import { Persona } from '../entities/Persona';
-import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
+import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 
 class PersonaController {
 
@@ -87,7 +87,9 @@ class PersonaController {
             fechaNacimiento
         } : Persona = req.body;
         // Se obtiene instancia de la base de datos
+        
         const persona : Persona = await queryRunner.manager.findOne(Persona, id);
+        
         //console.log('1.persona: ', persona);
         // Si no ecunetra el registro se lanza un error
         if(persona === undefined){
@@ -103,7 +105,9 @@ class PersonaController {
         persona.idTipoIdentificacion=idTipoIdentificacion;
         persona.fechaNacimiento=fechaNacimiento;
         // Se actualiza el objeto
+        console.log("aqui")
         return await queryRunner.manager.save(persona);
+        console.log("aca")
     }
 
     static sendResponse(response : Response, data: any = null, code : number = HTTP_STATUS_CODE_OK, ok : boolean = true, message : string = "OK") {
