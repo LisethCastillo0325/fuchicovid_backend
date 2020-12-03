@@ -125,7 +125,7 @@ class IntegranteHogarController {
             const id: string = req.params.id;
     
             // Se obtiene instancia de la base de datos
-            const integranteHogar: Persona = await queryRunner.manager.findOne(id);
+            const integranteHogar: Persona = await queryRunner.manager.findOne(Persona, id);
 
             // Si no ecunetra el registro se lanza un error
             if(integranteHogar === undefined){

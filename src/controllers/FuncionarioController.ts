@@ -199,7 +199,7 @@ class FuncionarioController {
     
             // Se obtiene instancia de la base de datos
 
-            const funcionario : Funcionario = await queryRunner.manager.findOne(id);
+            const funcionario : Funcionario = await queryRunner.manager.findOne(Funcionario, id);
 
             // Si no ecunetra el registro se lanza un error
             if(funcionario === undefined){

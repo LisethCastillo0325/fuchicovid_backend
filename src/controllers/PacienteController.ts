@@ -198,8 +198,8 @@ class PacienteController {
             } : Paciente = req.body;
 
              // Se obtiene instancia de la base de datos
-            const paciente : Paciente = await queryRunner.manager.findOne(id);
-    
+            const paciente : Paciente = await queryRunner.manager.findOne(Paciente, id);
+            //console.log('1.paciente: ', paciente);
             // Si no ecunetra el registro se lanza un error
             if(paciente === undefined){
                 let error = new DataNotFoundError();

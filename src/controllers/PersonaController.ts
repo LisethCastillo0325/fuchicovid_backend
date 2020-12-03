@@ -87,8 +87,8 @@ class PersonaController {
             fechaNacimiento
         } : Persona = req.body;
         // Se obtiene instancia de la base de datos
-        const persona : Persona = await queryRunner.manager.findOne(id);
-
+        const persona : Persona = await queryRunner.manager.findOne(Persona, id);
+        //console.log('1.persona: ', persona);
         // Si no ecunetra el registro se lanza un error
         if(persona === undefined){
             let error = new DataNotFoundError();

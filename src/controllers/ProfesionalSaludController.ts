@@ -123,7 +123,7 @@ class ProfesionalSaludController {
     
             // Se obtiene instancia de la base de datos
 
-            const profesionalSalud : Persona = await queryRunner.manager.findOne(id);
+            const profesionalSalud : Persona = await queryRunner.manager.findOne(Persona, id);
 
             // Si no ecunetra el registro se lanza un error
             if(profesionalSalud === undefined){
