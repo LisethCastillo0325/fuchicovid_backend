@@ -18,11 +18,11 @@ import { ProcesoRegistros } from "./ProcesoRegistros";
 import { ProfesionalSalud } from "./ProfesionalSalud";
 import { Usuario } from "./Usuario";
 
-@Entity("persona", { schema: "public" })
 @Index("persona_pkey", ["id"], { unique: true })
 @Index("persona_numero_identificacion_key", ["numeroIdentificacion"], {
   unique: true,
 })
+@Entity("persona", { schema: "public" })
 export class Persona {
   @PrimaryGeneratedColumn({ type: "integer", name: "id" })
   id: number;
@@ -38,6 +38,8 @@ export class Persona {
   })
   numeroIdentificacion: string | null;
 
+  @Column("date", { name: "fecha_nacimiento" })
+  fechaNacimiento: string;
 
   @Column("character varying", {
     name: "estado",
@@ -46,10 +48,6 @@ export class Persona {
     default: () => "'ACTIVO'",
   })
   estado: string | null;
-  
-
-  @Column("date", { name: "fecha_nacimiento" })
-  fechaNacimiento: string;
 
   @OneToOne(() => Funcionario, (funcionario) => funcionario.idPersona)
   funcionario: Funcionario;

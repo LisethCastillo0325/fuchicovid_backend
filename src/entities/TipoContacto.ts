@@ -5,7 +5,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { RelacionPacienteIntegrante } from "./RelacionPacienteIntegrante";
+import { ContactoEmergencia } from "./ContactoEmergencia";
 
 @Index("tipo_contacto_pkey", ["id"], { unique: true })
 @Entity("tipo_contacto", { schema: "public" })
@@ -17,8 +17,8 @@ export class TipoContacto {
   tipoContacto: string | null;
 
   @OneToMany(
-    () => RelacionPacienteIntegrante,
-    (relacionPacienteIntegrante) => relacionPacienteIntegrante.idTipoContacto
+    () => ContactoEmergencia,
+    (contactoEmergencia) => contactoEmergencia.idTipoContacto
   )
-  relacionPacienteIntegrantes: RelacionPacienteIntegrante[];
+  contactoEmergencias: ContactoEmergencia[];
 }

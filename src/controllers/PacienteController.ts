@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
-import { getConnection, getRepository } from "typeorm";
+import { getConnection, getRepository, Like, QueryBuilder, SelectQueryBuilder } from 'typeorm';
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import { Paciente } from '../entities/Paciente';
 import { Persona } from '../entities/Persona';
 import { HTTP_STATUS_CODE_BAD_REQUEST, HTTP_STATUS_CODE_CREATED, HTTP_STATUS_CODE_NOT_FOUND, HTTP_STATUS_CODE_OK } from '../global/statuscode';
 import PersonaController from './PersonaController';
+import PaginateData from '../classes/PaginateData';
 
 class PacienteController {
 
@@ -14,9 +15,17 @@ class PacienteController {
         try {
             const repositoryPersona = await getRepository(Persona)
                 .createQueryBuilder("persona")
-                .innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
-                .getRawMany();
-                
+                .innerJoinAndSelect("persona.paciente","paciente")
+                .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
+                .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
+                .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
+                .leftJoinAndSelect("integrante_hogar.idPersona2","integrante_hogar_persona")
+                .leftJoinAndSelect("paciente.contactoEmergencias","contacto_emergencia")
+                .leftJoinAndSelect("contacto_emergencia.idTipoContacto","contacto_tipo")
+                .leftJoinAndSelect("contacto_emergencia.idIntegranteHogar","contacto_integrante")
+                .leftJoinAndSelect("contacto_integrante.idPersona2","contacto_integrante_persona")
+                .getMany();
+
             PacienteController.sendResponse(res, repositoryPersona);    
            
         } catch (error) {
@@ -25,17 +34,67 @@ class PacienteController {
         }
     }
 
+    static getAllPaginated = async (req: Request, res: Response) => {
+        
+        try {   
+            
+            const queryBuilderPersona = getRepository(Persona)
+                .createQueryBuilder("persona")
+                .innerJoinAndSelect("persona.paciente","paciente")
+                .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
+                .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
+                .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
+                .leftJoinAndSelect("integrante_hogar.idPersona2","integrante_hogar_persona")
+                .leftJoinAndSelect("paciente.contactoEmergencias","contacto_emergencia")
+                .leftJoinAndSelect("contacto_emergencia.idTipoContacto","contacto_tipo")
+                .leftJoinAndSelect("contacto_emergencia.idIntegranteHogar","contacto_integrante")
+                .leftJoinAndSelect("contacto_integrante.idPersona2","contacto_integrante_persona")
+                .where("TRUE");
+
+                // WHERE
+                PacienteController.setWhere(req, queryBuilderPersona);
+
+                const result = await PaginateData.paginator(req, Paciente, undefined, queryBuilderPersona);
+                
+                PacienteController.sendResponse(res, result); 
+            
+        } catch (error) {
+            PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+        }
+    }
+
+    private static setWhere (req: Request, queryBuilderPersona: SelectQueryBuilder<Persona>) {
+        if(req.body.filters !== undefined){
+            if(req.body.filters.nombre !== null && req.body.filters.nombre !== ''){
+                const nombre : string = req.body.filters.nombre;
+                queryBuilderPersona.andWhere ("persona.nombre ILIKE :nombre", { nombre: `%${nombre}%` });
+            }
+            if(req.body.filters.estado !== null && req.body.filters.estado !== ''){
+                const estado : string = req.body.filters.estado;
+                queryBuilderPersona.andWhere("persona.estado = :estado", {estado: estado.toUpperCase()});
+            }
+        }
+    }
+
     static getById = async (req: Request, res: Response) => {
         // Se obtiene el id que llega por parametro en la url
         const id: string = req.params.id;
         
         try {
-            // Se obtiene instancia de la base de datos
+     
             const repositoryPersona = await getRepository(Persona)
-            .createQueryBuilder("persona")
-            .innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
-            .where('persona.id = :id', {id})
-            .getRawOne();
+                .createQueryBuilder("persona")
+                .innerJoinAndSelect("persona.paciente","paciente")
+                .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
+                .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
+                .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
+                .leftJoinAndSelect("integrante_hogar.idPersona2","integrante_hogar_persona")
+                .leftJoinAndSelect("paciente.contactoEmergencias","contacto_emergencia")
+                .leftJoinAndSelect("contacto_emergencia.idTipoContacto","contacto_tipo")
+                .leftJoinAndSelect("contacto_emergencia.idIntegranteHogar","contacto_integrante")
+                .leftJoinAndSelect("contacto_integrante.idPersona2","contacto_integrante_persona")
+                .where('persona.id = :id', {id})
+                .getMany();
 
             if(repositoryPersona === undefined) {
                 let error = new DataNotFoundError();

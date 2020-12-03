@@ -1,10 +1,10 @@
-import { Entity, getRepository, FindManyOptions } from 'typeorm';
+import { Entity, getRepository, FindManyOptions, SelectQueryBuilder } from 'typeorm';
 import { Request } from 'express';
 
 export default class PaginateData {
     
 
-    static async paginator(req: Request, entity: any, optinos?: FindManyOptions<any>){
+    static async paginator(req: Request, entity: any, optinos?: FindManyOptions<any>, queryBuilderPersona?: SelectQueryBuilder<any>){
         
         
         const repository   = getRepository(entity);
@@ -12,26 +12,39 @@ export default class PaginateData {
         const limit        = parseInt(req.body.limit)
         const skip         = ((page - 1) * limit);
 
-        let finalOptions : FindManyOptions<any>;
+        let totalRecords: number = 0;
+        let totalPages: number = 0;
+        let data: any;
 
-        if(optinos !== undefined){
-            finalOptions = optinos;
-            finalOptions.skip = skip;
-            finalOptions.take = limit;
-            finalOptions.cache = true;
+        if(queryBuilderPersona !== undefined){
+            queryBuilderPersona.skip(skip)
+            queryBuilderPersona.take(limit);
+            //console.log('Paginador - queryBuilderPersona: ', queryBuilderPersona.getSql());
+
+            totalRecords = await queryBuilderPersona.getCount();
+            totalPages   = Math.ceil(totalRecords / limit);
+            data = await queryBuilderPersona.getMany();
         }else{
-            finalOptions = {
-                skip: skip,
-                take: limit
-            }
-        }
-        
-        const totalRecords = await repository.count(finalOptions);
-        const totalPages   = Math.ceil(totalRecords / limit);
-      
-        console.log('finalOptions: ', finalOptions);
+            let finalOptions : FindManyOptions<any>;
 
-        const data = await repository.find(finalOptions);
+            if(optinos !== undefined){
+                finalOptions = optinos;
+                finalOptions.skip = skip;
+                finalOptions.take = limit;
+                finalOptions.cache = true;
+            }else{
+                finalOptions = {
+                    skip: skip,
+                    take: limit
+                }
+            }
+            
+            totalRecords = await repository.count(finalOptions);
+            totalPages   = Math.ceil(totalRecords / limit);
+            console.log('finalOptions: ', finalOptions);
+            data = await repository.find(finalOptions);
+        }
+
         const result = {
             totalRecords,
             totalPages,
@@ -40,6 +53,7 @@ export default class PaginateData {
             take: limit,
             data
         }
+
         return result;
     }
 

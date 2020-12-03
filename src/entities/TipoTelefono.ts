@@ -3,9 +3,10 @@ import {
   Entity,
   Index,
   OneToMany,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { PersonaTelefonos } from "./PersonaTelefonos";
+import { TelefonoIntegranteHogar } from "./TelefonoIntegranteHogar";
 import { TelefonoLaboratorio } from "./TelefonoLaboratorio";
 
 @Index("tipo_telefono_pkey", ["id"], { unique: true })
@@ -22,6 +23,12 @@ export class TipoTelefono {
     (personaTelefonos) => personaTelefonos.idTipoTelefono2
   )
   personaTelefonos: PersonaTelefonos[];
+
+  @OneToMany(
+    () => TelefonoIntegranteHogar,
+    (telefonoIntegranteHogar) => telefonoIntegranteHogar.idTipoTelefono
+  )
+  telefonoIntegranteHogars: TelefonoIntegranteHogar[];
 
   @OneToMany(
     () => TelefonoLaboratorio,

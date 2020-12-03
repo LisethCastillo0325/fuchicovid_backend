@@ -5,22 +5,20 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne
+  OneToOne,
 } from "typeorm";
+import { ContactoEmergencia } from "./ContactoEmergencia";
 import { Ciudad } from "./Ciudad";
-import { PacienteControles } from "./PacienteControles";
+import { ProfesionalSalud } from "./ProfesionalSalud";
 import { Persona } from "./Persona";
+import { PacienteControles } from "./PacienteControles";
 import { RelacionPacienteIntegrante } from "./RelacionPacienteIntegrante";
 
-@Entity("paciente", { schema: "public" })
 @Index("paciente_pkey", ["idPersona"], { unique: true })
-
+@Entity("paciente", { schema: "public" })
 export class Paciente {
   @Column("integer", { primary: true, name: "id_persona" })
   idPersona: number;
-
-  @Column("integer", { name: "id_doctor_encargado", nullable: true })
-  idDoctorEncargado: number | null;
 
   @Column("numeric", { name: "latitud", nullable: true })
   latitud: string | null;
@@ -34,9 +32,32 @@ export class Paciente {
   @Column("character varying", { name: "estado_enfermedad", nullable: true })
   estadoEnfermedad: string | null;
 
+  @Column("character varying", {
+    name: "estado",
+    nullable: true,
+    length: 8,
+    default: () => "'ACTIVO'",
+  })
+  estado: string | null;
+
+  @OneToMany(
+    () => ContactoEmergencia,
+    (contactoEmergencia) => contactoEmergencia.idPaciente
+  )
+  contactoEmergencias: ContactoEmergencia[];
+
   @ManyToOne(() => Ciudad, (ciudad) => ciudad.pacientes)
   @JoinColumn([{ name: "id_ciudad_contagio", referencedColumnName: "id" }])
   idCiudadContagio: Ciudad;
+
+  @ManyToOne(
+    () => ProfesionalSalud,
+    (profesionalSalud) => profesionalSalud.pacientes
+  )
+  @JoinColumn([
+    { name: "id_doctor_encargado", referencedColumnName: "idPersona" },
+  ])
+  idDoctorEncargado: ProfesionalSalud;
 
   @OneToOne(() => Persona, (persona) => persona.paciente)
   @JoinColumn([{ name: "id_persona", referencedColumnName: "id" }])
