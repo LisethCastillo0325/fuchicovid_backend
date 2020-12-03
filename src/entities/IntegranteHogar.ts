@@ -4,12 +4,13 @@ import {
   JoinColumn,
   OneToMany,
   OneToOne,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
 } from "typeorm";
+import { ContactoEmergencia } from "./ContactoEmergencia";
 import { CorreoIntegranteHogar } from "./CorreoIntegranteHogar";
 import { Persona } from "./Persona";
-import { PersonaTelefonos } from "./PersonaTelefonos";
 import { RelacionPacienteIntegrante } from "./RelacionPacienteIntegrante";
+import { TelefonoIntegranteHogar } from "./TelefonoIntegranteHogar";
 
 @Index("integrante_hogar_pkey", ["idPersona"], { unique: true })
 @Entity("integrante_hogar", { schema: "public" })
@@ -17,6 +18,11 @@ export class IntegranteHogar {
   @PrimaryGeneratedColumn({ type: "integer", name: "id_persona" })
   idPersona: number;
 
+  @OneToMany(
+    () => ContactoEmergencia,
+    (contactoEmergencia) => contactoEmergencia.idIntegranteHogar
+  )
+  contactoEmergencias: ContactoEmergencia[];
 
   @OneToMany(
     () => CorreoIntegranteHogar,
@@ -35,8 +41,8 @@ export class IntegranteHogar {
   relacionPacienteIntegrantes: RelacionPacienteIntegrante[];
 
   @OneToMany(
-    () => PersonaTelefonos,
-    (personaTelefonos) => personaTelefonos.idPersona
+    () => TelefonoIntegranteHogar,
+    (telefonoIntegranteHogar) => telefonoIntegranteHogar.idIntegrante
   )
-  personaTelefonos: PersonaTelefonos[];
+  telefonoIntegranteHogars: TelefonoIntegranteHogar[];
 }

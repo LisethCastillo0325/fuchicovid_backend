@@ -63,18 +63,18 @@ class ContactoEmergenciaController {
     static create = async (req: Request, res: Response) => {
 
         try {
-            console.log(req.body);
-            // se obtiene los datos enviados por parametro
-            let {  relacionPacienteIntegrante } : ContactoEmergencia = req.body;
+            // console.log(req.body);
+            // // se obtiene los datos enviados por parametro
+            // let {  relacionPacienteIntegrante } : ContactoEmergencia = req.body;
            
            
-            // Se construye objeto
+            // // Se construye objeto
            
-            let contactoEmergencia = new ContactoEmergencia();
-            contactoEmergencia.relacionPacienteIntegrante=relacionPacienteIntegrante;
-            const repositoryContactoEmergencia = getRepository(ContactoEmergencia);
+            // let contactoEmergencia = new ContactoEmergencia();
+            // contactoEmergencia.relacionPacienteIntegrante=relacionPacienteIntegrante;
+            // const repositoryContactoEmergencia = getRepository(ContactoEmergencia);
             
-            await repositoryContactoEmergencia.save(contactoEmergencia)           
+            // await repositoryContactoEmergencia.save(contactoEmergencia)           
 
         } catch (error) {
              // Se envia información sobre el error
@@ -102,14 +102,14 @@ class ContactoEmergenciaController {
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
-            let {  relacionPacienteIntegrante } : ContactoEmergencia = req.body;
-            contactoEmergencia.relacionPacienteIntegrante=relacionPacienteIntegrante;
-            const results=await repositoryContactoEmergencia.save(contactoEmergencia)        
+            // let {  relacionPacienteIntegrante } : ContactoEmergencia = req.body;
+            // contactoEmergencia.relacionPacienteIntegrante=relacionPacienteIntegrante;
+            // const results=await repositoryContactoEmergencia.save(contactoEmergencia)        
 
             
 
             // Se envia resultado 
-            ContactoEmergenciaController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "ContactoEmergencia actualizado correctamente");
+            //ContactoEmergenciaController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "ContactoEmergencia actualizado correctamente");
 
         } catch (error) {
              // Se envia información sobre el error

@@ -1,3 +1,9 @@
+ALTER TABLE contacto_emergencia ADD CONSTRAINT contacto_emergencia_id_paciente_fkey FOREIGN KEY( id_paciente)
+	REFERENCES paciente (id_persona);
+
+ALTER TABLE paciente ADD CONSTRAINT fk_paciente_id_doctor_encargado FOREIGN KEY (id_doctor_encargado) 
+    REFERENCES profesional_salud (id_persona);
+
 -- PERSONA
 ALTER TABLE persona ADD COLUMN fecha_nacimiento DATE NOT NULL;
 
@@ -62,6 +68,14 @@ INSERT INTO tipo_contacto (tipo_contacto) VALUES ('FAMILIAR'), ('AMIGO'), ('VECI
 -- INSERT INTO entidad_promotora_salud VALUES (default, 'SOS');
 -- INSERT INTO profesional_salud VALUES (1,1,1);
 -- INSERT INTO paciente VALUEs (2, 1, '3.441297','-76.522849', 3, 1252, 'TRATAMIENTO', default);
+
+-- insert into persona values (default, 'integrante',1,'740145001', '1994-01-10'::date, 'ACTIVO');
+
+-- insert into integrante_hogar values (23);
+
+-- insert into relacion_paciente_integrante values (default, 2, 23, 1);
+-- insert into relacion_paciente_integrante values (default, 2, 23, 2);
+-- insert into relacion_paciente_integrante values (default, 2, 23, 3);
 
 -- INSERT PAIS
 INSERT INTO pais (nombre) VALUES ('COLOMBIA');

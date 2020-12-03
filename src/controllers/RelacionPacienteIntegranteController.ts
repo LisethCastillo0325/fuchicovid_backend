@@ -98,7 +98,7 @@ class RelacionPacienteIntegranteController {
         try {
             console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let { idPaciente,idIntegrante,idTipoContacto } : RelacionPacienteIntegrante = req.body;
+            let { idPaciente,idIntegrante,idParentesco } : RelacionPacienteIntegrante = req.body;
            
            
             // Se construye objeto
@@ -106,7 +106,7 @@ class RelacionPacienteIntegranteController {
             let relacionPacienteIntegrante = new RelacionPacienteIntegrante();
             relacionPacienteIntegrante.idPaciente=idPaciente;
             relacionPacienteIntegrante.idIntegrante=idIntegrante;
-            relacionPacienteIntegrante.idTipoContacto=idTipoContacto;
+            relacionPacienteIntegrante.idParentesco=idParentesco;
             const repositoryRelacionPacienteIntegrante = getRepository(RelacionPacienteIntegrante);
             
             await repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante)           
@@ -137,10 +137,10 @@ class RelacionPacienteIntegranteController {
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
-            let { idPaciente,idIntegrante,idTipoContacto } : RelacionPacienteIntegrante = req.body;
+            let { idPaciente,idIntegrante,idParentesco } : RelacionPacienteIntegrante = req.body;
             relacionPacienteIntegrante.idPaciente=idPaciente;
             relacionPacienteIntegrante.idIntegrante=idIntegrante;
-            relacionPacienteIntegrante.idTipoContacto=idTipoContacto;
+            relacionPacienteIntegrante.idParentesco=idParentesco;
 
             const results=await repositoryRelacionPacienteIntegrante.save(relacionPacienteIntegrante)        
 
