@@ -9,6 +9,6 @@ router.get('/', FuncionarioController.getAll);
 router.get('/:id', FuncionarioController.getById);
 router.post('/', FuncionarioController.create);
 router.put('/:id', FuncionarioController.update);
-//router.put('/activar-inactivar/:id', FuncionarioController.inactivateAndActivate);
+router.put('/activar-inactivar/:id', FuncionarioController.inactivateAndActivate);
 router.post('/pagination-filters/', FuncionarioController.getAllPaginated);
 export default router;
