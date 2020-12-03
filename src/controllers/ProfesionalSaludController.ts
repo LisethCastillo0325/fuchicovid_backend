@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
+import { getRepository, getConnection } from 'typeorm';
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import { Persona } from '../entities/Persona';
@@ -108,16 +108,21 @@ class ProfesionalSaludController {
     }
 
     static update = async (req: Request, res: Response) => {
+         // get a connection and create a new query runner
+         const queryRunner = getConnection().createQueryRunner();
+         // establish real database connection using our new query runner
+         await queryRunner.connect();
+         // lets now open a new transaction:
+         await queryRunner.startTransaction();
+
         try {
              
             // Se obtiene el id que llega por parametro en la url
             const id: string = req.params.id;
     
             // Se obtiene instancia de la base de datos
-            const repositoryProfesionalSalud = getRepository(Persona);
 
-            
-            const profesionalSalud = await repositoryProfesionalSalud.findOne(id);
+            const profesionalSalud : Persona = await queryRunner.manager.findOne(id);
 
             // Si no ecunetra el registro se lanza un error
             if(profesionalSalud === undefined){
@@ -127,21 +132,26 @@ class ProfesionalSaludController {
                 throw error;
             }
 
-            PersonaController.update(req,res);
-
-            // Se actualiza el objeto
-            //const results = repositoryProfesionalSalud.save(profesionalSalud);
+            PersonaController.update(req,res, queryRunner);
+            // commit transaction now:
+            await queryRunner.commitTransaction();
 
             // Se envia resultado 
-            //ProfesionalSaludController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "ProfesionalSalud actualizado correctamente");
+            ProfesionalSaludController.sendResponse(res, null, HTTP_STATUS_CODE_CREATED, true, "ProfesionalSalud actualizado correctamente");
 
         } catch (error) {
+            // since we have errors let's rollback changes we made
+            await queryRunner.rollbackTransaction();
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                //ProfesionalSaludController.sendResponse(res, null, error.statusCode, false, error.message);
+                ProfesionalSaludController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               // ProfesionalSaludController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+                ProfesionalSaludController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
+        }
+        finally {
+            // you need to release query runner which is manually created:
+            await queryRunner.release();
         }
     }
 

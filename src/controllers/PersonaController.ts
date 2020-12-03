@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
+import { getRepository, QueryRunner } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import { Persona } from '../entities/Persona';
@@ -14,7 +14,8 @@ class PersonaController {
             
             const data = await repositoryPersona.find();
             // Se envia datos solicitados 
-            PersonaController.sendResponse(res, data);
+            return data;
+            //PersonaController.sendResponse(res, data);
         } catch (error) {
             // Se envia información sobre el error
             PersonaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
@@ -38,7 +39,8 @@ class PersonaController {
                 throw error;
             }
             // Se envia datos solicitados 
-            PersonaController.sendResponse(res, persona);
+            return persona;
+            //PersonaController.sendResponse(res, persona);
 
         } catch (error) {
             // Se envia información sobre el error
@@ -50,29 +52,27 @@ class PersonaController {
         }
     }
 
-    static create = async (req: Request, res: Response) => {
+    static create = async (req: Request, res: Response, queryRunner: QueryRunner) => {
 
         try {
-            console.log(req.body);
+            console.log('presona.create: ',req.body);
             // se obtiene los datos enviados por parametro
-            let { nombre,numeroIdentificacion,idTipoIdentificacion } : Persona = req.body;
+            let { 
+                nombre,
+                numeroIdentificacion,
+                idTipoIdentificacion,
+                fechaNacimiento
+            } : Persona = req.body;
 
-           
             // Se construye objeto
-           
             let persona = new Persona();
             persona.nombre = nombre;
             persona.numeroIdentificacion=numeroIdentificacion;
             persona.idTipoIdentificacion=idTipoIdentificacion;
+            persona.fechaNacimiento = fechaNacimiento;
             
-            
-
-            // Se obtiene instancia de la base de datos
-            const repositoryPersona = getRepository(Persona);
             // Se guarda el objeto
-            const results = repositoryPersona.save(persona);
-            // Se envia resultado 
-            PersonaController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Persona creada correctamente");
+            return await queryRunner.manager.save(persona);
 
         } catch (error) {
              // Se envia información sobre el error
@@ -81,19 +81,20 @@ class PersonaController {
 
     }
 
-    static update = async (req: Request, res: Response) => {
+    static update = async (req: Request, res: Response, queryRunner: QueryRunner) => {
+       
         try {
-             
-            // Se obtiene el id que llega por parametro en la url
+             // Se obtiene el id que llega por parametro en la url
             const id: string = req.params.id;
 
             // se obtiene los datos enviados por parametro
-            let { nombre,numeroIdentificacion,idTipoIdentificacion} : Persona = req.body;
+            let { 
+                nombre,
+                numeroIdentificacion,
+                idTipoIdentificacion
+            } : Persona = req.body;
             // Se obtiene instancia de la base de datos
-            const repositoryPersona = getRepository(Persona);
-
-            
-            const persona = await repositoryPersona.findOne(id);
+            const persona : Persona = await queryRunner.manager.findOne(id);
 
             // Si no ecunetra el registro se lanza un error
             if(persona === undefined){
@@ -103,16 +104,12 @@ class PersonaController {
                 throw error;
             }
 
-           
             // Se construye objeto
             persona.nombre = nombre;
             persona.numeroIdentificacion=numeroIdentificacion;
             persona.idTipoIdentificacion=idTipoIdentificacion;
             // Se actualiza el objeto
-            const results = repositoryPersona.save(persona);
-
-            // Se envia resultado 
-            PersonaController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Persona actualizada correctamente");
+            return await queryRunner.manager.save(persona);
 
         } catch (error) {
              // Se envia información sobre el error

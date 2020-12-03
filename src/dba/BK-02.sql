@@ -56,6 +56,12 @@ REFERENCES parentesco (id);
 INSERT INTO tipo_contacto (tipo_contacto) VALUES ('FAMILIAR'), ('AMIGO'), ('VECINO');
 -- FIN
 
+-- INSERT INCIALES PRUEBAS
+-- INSERT INTO persona VALUES (default, 'Sebastian Castillo', 1, '1451201', '1999-02-28'::date) returning id
+-- INSERT INTO universidad VALUES (default, 'UNIVALLE');
+-- INSERT INTO entidad_promotora_salud VALUES (default, 'SOS');
+-- INSERT INTO profesional_salud VALUES (1,1,1);
+-- INSERT INTO paciente VALUEs (2, 1, '3.441297','-76.522849', 3, 1252, 'TRATAMIENTO', default);
 
 -- INSERT PAIS
 INSERT INTO pais (nombre) VALUES ('COLOMBIA');

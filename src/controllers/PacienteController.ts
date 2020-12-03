@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getRepository } from "typeorm";
+import { getConnection, getRepository } from "typeorm";
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import { Paciente } from '../entities/Paciente';
@@ -11,15 +11,13 @@ class PacienteController {
 
     static getAll = async (req: Request, res: Response) => {
         // Se obtiene instancia de la base de datos
-        
         try {
-            
-            const repositoryPersona=getRepository(Persona);
-           
-            repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
-            .getRawMany().then(function(value){
-            PacienteController.sendResponse(res, value);
-            });    
+            const repositoryPersona = await getRepository(Persona)
+                .createQueryBuilder("persona")
+                .innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
+                .getRawMany();
+                
+            PacienteController.sendResponse(res, repositoryPersona);    
            
         } catch (error) {
             // Se envia información sobre el error
@@ -30,28 +28,24 @@ class PacienteController {
     static getById = async (req: Request, res: Response) => {
         // Se obtiene el id que llega por parametro en la url
         const id: string = req.params.id;
-
-        // Se obtiene instancia de la base de datos
-        const repositoryPersona = getRepository(Persona);
+        
         try {
-            await repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
-            .where(`persona.id = ${id}`).getRawOne()
-            .then(function(value)
-            {
-                if(value!=undefined)
-                {
-                    // Se envia datos solicitados 
-                    PacienteController.sendResponse(res, value);
-                
-                }
-                else 
-                { 
-                    let error = new DataNotFoundError();
-                    error.message = `Paciente con id ${id} no encontrado`;
-                    error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
-                    throw error;
-                }
-            });
+            // Se obtiene instancia de la base de datos
+            const repositoryPersona = await getRepository(Persona)
+            .createQueryBuilder("persona")
+            .innerJoinAndSelect(Paciente,'paciente',"paciente.idPersona=persona.id")
+            .where('persona.id = :id', {id})
+            .getRawOne();
+
+            if(repositoryPersona === undefined) {
+                let error = new DataNotFoundError();
+                error.message = `Paciente con id ${id} no encontrado`;
+                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+                throw error;
+            } else { 
+                 // Se envia datos solicitados 
+                 PacienteController.sendResponse(res, repositoryPersona);
+            }
 
         } catch (error) {
             // Se envia información sobre el error
@@ -65,77 +59,96 @@ class PacienteController {
 
     static create = async (req: Request, res: Response) => {
 
+        // get a connection and create a new query runner
+        const queryRunner = getConnection().createQueryRunner();
+        // establish real database connection using our new query runner
+        await queryRunner.connect();
+        // lets now open a new transaction:
+        await queryRunner.startTransaction();
+
         try {
-            console.log(req.body);
             // se obtiene los datos enviados por parametro
-            let { nombre,numeroIdentificacion,idTipoIdentificacion } : Persona = req.body;
-            let{idDoctorEncargado,latitud,longitud,numeroIntegrantesHogar,idCiudadContagio,estadoEnfermedad} : Paciente=req.body;
-           
+            let persona : Persona = await PersonaController.create(req, res, queryRunner);
+
             // Se construye objeto
-           
-            let persona = new Persona();
-            persona.nombre = nombre;
-            persona.numeroIdentificacion=numeroIdentificacion;
-            persona.idTipoIdentificacion=idTipoIdentificacion;
-            const repositoryPersona = getRepository(Persona);
-            
-            await repositoryPersona.save(persona)           
-            .then(function()
-            {
-             const repositoryCiudad = getRepository(Persona);
-             repositoryCiudad.createQueryBuilder("persona")
-            .where(`persona.numero_identificacion = '${numeroIdentificacion}'`).getRawOne()
-            .then(function(value){
-            
+            if(persona === undefined){
+                throw new Error('Se presentó un error al crear el paciente.');
+            }else{
+
+                let {
+                    idDoctorEncargado,
+                    latitud,
+                    longitud,
+                    numeroIntegrantesHogar,
+                    idCiudadContagio,
+                    estadoEnfermedad
+                } : Paciente = req.body;
+
                 let paciente = new Paciente();
-                paciente.idPersona = value["persona_id"];
-                paciente.idDoctorEncargado=idDoctorEncargado;
-                paciente.latitud=latitud;
-                paciente.longitud=longitud;
-                paciente.numeroIntegrantesHogar=numeroIntegrantesHogar;
-                paciente.idCiudadContagio=idCiudadContagio;
-                paciente.estadoEnfermedad=estadoEnfermedad;
-                    // Se obtiene instancia de la base de datos
-                const repositoryPaciente = getRepository(Paciente);
-                    // Se guarda el objeto
-                const results = repositoryPaciente.save(paciente);
+                paciente.idPersona = persona.id;
+                paciente.idDoctorEncargado = idDoctorEncargado;
+                paciente.latitud = latitud;
+                paciente.longitud = longitud;
+                paciente.numeroIntegrantesHogar = numeroIntegrantesHogar;
+                paciente.idCiudadContagio = idCiudadContagio;
+                paciente.estadoEnfermedad = estadoEnfermedad;
+               
+                // Se guarda el objeto
+                const results = await queryRunner.manager.save(paciente);
+                
+                // commit transaction now:
+                await queryRunner.commitTransaction();
                 // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
                 PacienteController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Paciente creado correctamente");
-            })});
-            
-            
+            }
 
-        } catch (error) {
+        } 
+        catch (error) {
+            // since we have errors let's rollback changes we made
+            await queryRunner.rollbackTransaction();
              // Se envia información sobre el error
             PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
         }
-
+        finally {
+            // you need to release query runner which is manually created:
+            await queryRunner.release();
+        }
     }
 
     static update = async (req: Request, res: Response) => {
+        
+        // get a connection and create a new query runner
+        const queryRunner = getConnection().createQueryRunner();
+        // establish real database connection using our new query runner
+        await queryRunner.connect();
+        // lets now open a new transaction:
+        await queryRunner.startTransaction();
+        
         try {
              
             // Se obtiene el id que llega por parametro en la url
             const id: string = req.params.id;
+
+            let {
+                idDoctorEncargado,
+                latitud,
+                longitud,
+                numeroIntegrantesHogar,
+                idCiudadContagio,
+                estadoEnfermedad
+            } : Paciente = req.body;
+
+             // Se obtiene instancia de la base de datos
+            const paciente : Paciente = await queryRunner.manager.findOne(id);
     
-            // Se obtiene instancia de la base de datos
-            const repositoryPersona= getRepository(Persona);
-
-            
-            const persona = await repositoryPersona.findOne(id);
-
             // Si no ecunetra el registro se lanza un error
-            if(persona === undefined){
+            if(paciente === undefined){
                 let error = new DataNotFoundError();
                 error.message = `Paciente con id ${id} no encontrado`;
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
 
-           
-            const repositoryPaciente = getRepository(Paciente);
-            const paciente = await repositoryPaciente.findOne(id);
-            let{idDoctorEncargado,latitud,longitud,numeroIntegrantesHogar,idCiudadContagio,estadoEnfermedad} : Paciente=req.body;
             paciente.idDoctorEncargado=idDoctorEncargado;
             paciente.latitud=latitud;
             paciente.longitud=longitud;
@@ -143,22 +156,33 @@ class PacienteController {
             paciente.idCiudadContagio=idCiudadContagio;
             paciente.estadoEnfermedad=estadoEnfermedad;
               
-                    // Se guarda el objeto
-            await repositoryPaciente.save(paciente);
-            await PersonaController.update(req,res);
-            // Se actualiza el objeto
-            //const results = repositoryPaciente.save(paciente);
+            // Se guarda el objeto
+            await queryRunner.manager.save(paciente);
+            
+            // Actualizar datos de persona
+            await PersonaController.update(req, res, queryRunner);
 
-            // Se envia resultado 
-            //PacienteController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, "Paciente actualizado correctamente");
+            // commit transaction now:
+            await queryRunner.commitTransaction();
 
-        } catch (error) {
+            // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
+            PacienteController.sendResponse(res, paciente, HTTP_STATUS_CODE_CREATED, true, "Paciente actualizado correctamente");
+            
+        } 
+        catch (error) {
+            // since we have errors let's rollback changes we made
+            await queryRunner.rollbackTransaction();
+
              // Se envia información sobre el error
             if(error instanceof DataNotFoundError){
-                //PacienteController.sendResponse(res, null, error.statusCode, false, error.message);
+                PacienteController.sendResponse(res, null, error.statusCode, false, error.message);
             }else{
-               // PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+               PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
             }
+        } 
+        finally {
+            // you need to release query runner which is manually created:
+            await queryRunner.release();
         }
     }
 
