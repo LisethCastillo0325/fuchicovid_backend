@@ -34,14 +34,6 @@ export class Paciente {
   @Column("character varying", { name: "estado_enfermedad", nullable: true })
   estadoEnfermedad: string | null;
 
-  @Column("character varying", {
-    name: "estado",
-    nullable: true,
-    length: 8,
-    default: () => "'ACTIVO'",
-  })
-  estado: string | null;
-
   @ManyToOne(() => Ciudad, (ciudad) => ciudad.pacientes)
   @JoinColumn([{ name: "id_ciudad_contagio", referencedColumnName: "id" }])
   idCiudadContagio: Ciudad;

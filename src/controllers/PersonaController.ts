@@ -54,71 +54,56 @@ class PersonaController {
 
     static create = async (req: Request, res: Response, queryRunner: QueryRunner) => {
 
-        try {
-            console.log('presona.create: ',req.body);
-            // se obtiene los datos enviados por parametro
-            let { 
-                nombre,
-                numeroIdentificacion,
-                idTipoIdentificacion,
-                fechaNacimiento
-            } : Persona = req.body;
+        // se obtiene los datos enviados por parametro
+        let { 
+            nombre,
+            numeroIdentificacion,
+            idTipoIdentificacion,
+            fechaNacimiento
+        } : Persona = req.body;
 
-            // Se construye objeto
-            let persona = new Persona();
-            persona.nombre = nombre;
-            persona.numeroIdentificacion=numeroIdentificacion;
-            persona.idTipoIdentificacion=idTipoIdentificacion;
-            persona.fechaNacimiento = fechaNacimiento;
-            
-            // Se guarda el objeto
-            return await queryRunner.manager.save(persona);
-
-        } catch (error) {
-             // Se envia información sobre el error
-            PersonaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
-        }
+        // Se construye objeto
+        let persona = new Persona();
+        persona.nombre = nombre;
+        persona.numeroIdentificacion=numeroIdentificacion;
+        persona.idTipoIdentificacion=idTipoIdentificacion;
+        persona.fechaNacimiento = fechaNacimiento;
+        
+        // Se guarda el objeto
+        return await queryRunner.manager.save(persona);
 
     }
 
     static update = async (req: Request, res: Response, queryRunner: QueryRunner) => {
        
-        try {
-             // Se obtiene el id que llega por parametro en la url
-            const id: string = req.params.id;
+        // Se obtiene el id que llega por parametro en la url
+        const id: string = req.params.id;
 
-            // se obtiene los datos enviados por parametro
-            let { 
-                nombre,
-                numeroIdentificacion,
-                idTipoIdentificacion
-            } : Persona = req.body;
-            // Se obtiene instancia de la base de datos
-            const persona : Persona = await queryRunner.manager.findOne(id);
+        // se obtiene los datos enviados por parametro
+        let { 
+            nombre,
+            numeroIdentificacion,
+            idTipoIdentificacion,
+            fechaNacimiento
+        } : Persona = req.body;
+        // Se obtiene instancia de la base de datos
+        const persona : Persona = await queryRunner.manager.findOne(id);
 
-            // Si no ecunetra el registro se lanza un error
-            if(persona === undefined){
-                let error = new DataNotFoundError();
-                error.message = `Persona con id ${id} no encontrado`;
-                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
-                throw error;
-            }
-
-            // Se construye objeto
-            persona.nombre = nombre;
-            persona.numeroIdentificacion=numeroIdentificacion;
-            persona.idTipoIdentificacion=idTipoIdentificacion;
-            // Se actualiza el objeto
-            return await queryRunner.manager.save(persona);
-
-        } catch (error) {
-             // Se envia información sobre el error
-            if(error instanceof DataNotFoundError){
-                PersonaController.sendResponse(res, null, error.statusCode, false, error.message);
-            }else{
-                PersonaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
-            }
+        // Si no ecunetra el registro se lanza un error
+        if(persona === undefined){
+            let error = new DataNotFoundError();
+            error.message = `Persona con id ${id} no encontrado`;
+            error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+            throw error;
         }
+
+        // Se construye objeto
+        persona.nombre = nombre;
+        persona.numeroIdentificacion=numeroIdentificacion;
+        persona.idTipoIdentificacion=idTipoIdentificacion;
+        persona.fechaNacimiento=fechaNacimiento;
+        // Se actualiza el objeto
+        return await queryRunner.manager.save(persona);
     }
 
     static sendResponse(response : Response, data: any = null, code : number = HTTP_STATUS_CODE_OK, ok : boolean = true, message : string = "OK") {
