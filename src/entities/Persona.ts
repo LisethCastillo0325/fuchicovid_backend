@@ -38,6 +38,16 @@ export class Persona {
   })
   numeroIdentificacion: string | null;
 
+
+  @Column("character varying", {
+    name: "estado",
+    nullable: true,
+    length: 8,
+    default: () => "'ACTIVO'",
+  })
+  estado: string | null;
+  
+
   @Column("date", { name: "fecha_nacimiento" })
   fechaNacimiento: string;
 
