@@ -256,7 +256,7 @@ UPDATE persona SET estado = 'ACTIVO';
 
 ALTER TABLE paciente ADD CONSTRAINT ck_paciente_estado_enfermedad CHECK (estado_enfermedad = ANY(ARRAY['TRATAMIENTO', 'CURADO']));
 -- FIN PACIENTE
-
+--CONSTRAINT A LA DOSIS
 
 -- PARENTESCO
 CREATE TABLE parentesco (

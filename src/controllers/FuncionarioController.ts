@@ -195,8 +195,7 @@ class FuncionarioController {
              
             // Se obtiene el id que llega por parametro en la url
             const id: string = req.params.id;
-            console.log(req.body);
-            console.log(req.params.id);
+           
             // Se obtiene instancia de la base de datos
             
             const funcionario : Funcionario = await queryRunner.manager.findOne(Funcionario,id);
