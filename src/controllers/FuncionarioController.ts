@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getRepository, Like, getConnection } from 'typeorm';
+import { getConnection, getRepository, Like } from 'typeorm';
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import PaginateData from '../classes/PaginateData';
@@ -142,47 +142,46 @@ class FuncionarioController {
         return where;
     }
 
-    // static inactivateAndActivate = async (req: Request, res: Response) => {
-    //     try {
+    static inactivateAndActivate = async (req: Request, res: Response) => {
+        try {
              
-    //         // Se obtiene el id que llega por parametro en la url
-    //         const id: string = req.params.id;
+            // Se obtiene el id que llega por parametro en la url
+            const id: string = req.params.id;
+            console.log("cosas que hace",req.body);
+            // se obtiene los datos enviados por parametro
+            let { estado } : Persona = req.body;
 
-    //         // se obtiene los datos enviados por parametro
-    //         let { estado } : Persona = req.body;
+            // Se obtiene instancia de la base de datos
+            const repositoryPersona = getRepository(Persona);
 
-    //         // Se obtiene instancia de la base de datos
-    //         const repositoryFuncionario = getRepository(Funcionario);
+            // se obtiene el tipo de identificación por el id
+            const persona = await repositoryPersona.findOne(id);
+          
+            // Si no ecunetra el registro se lanza un error
+            if(persona === undefined){
+                let error = new DataNotFoundError();
+                error.message = `Persona con id ${id} no encontrado`;
+                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+                throw error;
+            }
+            // se actualiza los datos del tipo de identificación
+            persona.estado = estado.toUpperCase();
 
-    //         // se obtiene el tipo de identificación por el id
-    //         const tipoIdentificacion = await repositoryFuncionario.findOne(id);
+            // Se actualiza el objeto
+            const results = repositoryPersona.save(persona);
 
-    //         // Si no ecunetra el registro se lanza un error
-    //         if(tipoIdentificacion === undefined){
-    //             let error = new DataNotFoundError();
-    //             error.message = `Funcionario con id ${id} no encontrado`;
-    //             error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
-    //             throw error;
-    //         }
+            // Se envia resultado 
+            PersonaController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, `Persona ${estado.toUpperCase()} correctamente`);
 
-    //         // se actualiza los datos del tipo de identificación
-    //         tipoIdentificacion.estado = estado.toUpperCase();
-
-    //         // Se actualiza el objeto
-    //         const results = repositoryFuncionario.save(tipoIdentificacion);
-
-    //         // Se envia resultado 
-    //         FuncionarioController.sendResponse(res, results, HTTP_STATUS_CODE_CREATED, true, `Funcionario ${estado.toUpperCase()} correctamente`);
-
-    //     } catch (error) {
-    //          // Se envia información sobre el error
-    //         if(error instanceof DataNotFoundError){
-    //             FuncionarioController.sendResponse(res, null, error.statusCode, false, error.message);
-    //         }else{
-    //             FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
-    //         }
-    //     }
-    // }
+        } catch (error) {
+             // Se envia información sobre el error
+            if(error instanceof DataNotFoundError){
+                PersonaController.sendResponse(res, null, error.statusCode, false, error.message);
+            }else{
+                PersonaController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            }
+        }
+    }
 
     static update = async (req: Request, res: Response) => {
         // get a connection and create a new query runner
@@ -196,10 +195,12 @@ class FuncionarioController {
              
             // Se obtiene el id que llega por parametro en la url
             const id: string = req.params.id;
-    
+            console.log(req.body);
+            console.log(req.params.id);
             // Se obtiene instancia de la base de datos
-
-            const funcionario : Funcionario = await queryRunner.manager.findOne(Funcionario, id);
+            
+            const funcionario : Funcionario = await queryRunner.manager.findOne(Funcionario,id);
+            console.log(funcionario);
 
             // Si no ecunetra el registro se lanza un error
             if(funcionario === undefined){
@@ -208,11 +209,11 @@ class FuncionarioController {
                 error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
                 throw error;
             }
-
-            PersonaController.update(req, res, queryRunner);
-
+            
+            await PersonaController.update(req, res, queryRunner);
             // commit transaction now:
             await queryRunner.commitTransaction();
+            await queryRunner.release();
             // Se envia resultado 
             FuncionarioController.sendResponse(res, null, HTTP_STATUS_CODE_CREATED, true, "Funcionario actualizado correctamente");
 
