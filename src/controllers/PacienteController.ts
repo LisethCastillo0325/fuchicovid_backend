@@ -16,6 +16,10 @@ class PacienteController {
             const repositoryPersona = await getRepository(Persona)
                 .createQueryBuilder("persona")
                 .innerJoinAndSelect("persona.paciente","paciente")
+                .innerJoinAndSelect("persona.idTipoIdentificacion", "tipo_identificacion")
+                .innerJoinAndSelect("paciente.idDoctorEncargado", "medico")
+                .innerJoinAndSelect("medico.idPersona2", "medico_persona")
+                .innerJoinAndSelect("paciente.idCiudadContagio", "ciudad")
                 .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
@@ -41,6 +45,10 @@ class PacienteController {
             const queryBuilderPersona = getRepository(Persona)
                 .createQueryBuilder("persona")
                 .innerJoinAndSelect("persona.paciente","paciente")
+                .innerJoinAndSelect("persona.idTipoIdentificacion", "tipo_identificacion")
+                .innerJoinAndSelect("paciente.idDoctorEncargado", "medico")
+                .innerJoinAndSelect("medico.idPersona2", "medico_persona")
+                .innerJoinAndSelect("paciente.idCiudadContagio", "ciudad")
                 .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
@@ -65,13 +73,22 @@ class PacienteController {
 
     private static setWhere (req: Request, queryBuilderPersona: SelectQueryBuilder<Persona>) {
         if(req.body.filters !== undefined){
-            if(req.body.filters.nombre !== null && req.body.filters.nombre !== ''){
-                const nombre : string = req.body.filters.nombre;
-                queryBuilderPersona.andWhere ("persona.nombre ILIKE :nombre", { nombre: `%${nombre}%` });
+            let filters = req.body.filters;
+            console.log('filters paciente: ',filters);
+            if(filters.nombre !== null && filters.nombre !== ''){
+                queryBuilderPersona.andWhere ("persona.nombre ILIKE :nombre", { nombre: `%${filters.nombre}%` });
             }
-            if(req.body.filters.estado !== null && req.body.filters.estado !== ''){
-                const estado : string = req.body.filters.estado;
-                queryBuilderPersona.andWhere("persona.estado = :estado", {estado: estado.toUpperCase()});
+            if(filters.estado !== null && filters.estado !== ''){
+                queryBuilderPersona.andWhere("persona.estado = :estado", {estado: filters.estado});
+            }
+            if(filters.numeroDocumento !== null && filters.numeroDocumento !== ''){
+                queryBuilderPersona.andWhere("persona.numeroIdentificacion LIKE :numeroIdentificacion", { numeroIdentificacion: `%${filters.numeroDocumento}%` });
+            }
+            if(filters.tipodoDumento !== null && filters.tipodoDumento !== ''){
+                queryBuilderPersona.andWhere("persona.idTipoIdentificacion = :idTipoIdentificacion", {idTipoIdentificacion: filters.tipodoDumento});
+            }
+            if(filters.ciudad !== null && filters.ciudad !== ''){
+                queryBuilderPersona.andWhere("paciente.idCiudadContagio = :idCiudadContagio", {idCiudadContagio: filters.ciudad});
             }
         }
     }
@@ -85,6 +102,10 @@ class PacienteController {
             const repositoryPersona = await getRepository(Persona)
                 .createQueryBuilder("persona")
                 .innerJoinAndSelect("persona.paciente","paciente")
+                .innerJoinAndSelect("persona.idTipoIdentificacion", "tipo_identificacion")
+                .innerJoinAndSelect("paciente.idDoctorEncargado", "medico")
+                .innerJoinAndSelect("medico.idPersona2", "medico_persona")
+                .innerJoinAndSelect("paciente.idCiudadContagio", "ciudad")
                 .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
@@ -94,7 +115,7 @@ class PacienteController {
                 .leftJoinAndSelect("contacto_emergencia.idIntegranteHogar","contacto_integrante")
                 .leftJoinAndSelect("contacto_integrante.idPersona2","contacto_integrante_persona")
                 .where('persona.id = :id', {id})
-                .getMany();
+                .getOne();
 
             if(repositoryPersona === undefined) {
                 let error = new DataNotFoundError();
@@ -224,7 +245,7 @@ class PacienteController {
             // commit transaction now:
             await queryRunner.commitTransaction();
 
-            // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
+            // Se envia resultado 
             PacienteController.sendResponse(res, paciente, HTTP_STATUS_CODE_CREATED, true, "Paciente actualizado correctamente");
             
         } 
@@ -244,6 +265,44 @@ class PacienteController {
             await queryRunner.release();
         }
     }
+
+    static inactivateAndActivate = async (req: Request, res: Response) => {
+        // get a connection and create a new query runner
+        const queryRunner = getConnection().createQueryRunner();
+        // establish real database connection using our new query runner
+        await queryRunner.connect();
+        // lets now open a new transaction:
+        await queryRunner.startTransaction();
+        
+        try {
+            let {estado} : Persona = req.body;
+            // Actualizar datos de persona
+            await PersonaController.inactivateAndActivate(req, res, queryRunner);
+
+            // commit transaction now:
+            await queryRunner.commitTransaction();
+
+            // Se envia resultado 
+            PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_CREATED, true, `Paciente ${estado.toUpperCase()} correctamente`);
+            
+        } 
+        catch (error) {
+            // since we have errors let's rollback changes we made
+            await queryRunner.rollbackTransaction();
+
+             // Se envia información sobre el error
+            if(error instanceof DataNotFoundError){
+                PacienteController.sendResponse(res, null, error.statusCode, false, error.message);
+            }else{
+               PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            }
+        } 
+        finally {
+            // you need to release query runner which is manually created:
+            await queryRunner.release();
+        }
+    }
+    
 
     static sendResponse(response : Response, data: any = null, code : number = HTTP_STATUS_CODE_OK, ok : boolean = true, message : string = "OK") {
         const apiResponse = new ApiResponse(response, code, ok, message, data);

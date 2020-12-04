@@ -10,5 +10,6 @@ router.post('/pagination-filters/', PacienteController.getAllPaginated);
 router.get('/:id', PacienteController.getById);
 router.post('/', PacienteController.create);
 router.put('/:id', PacienteController.update);
+router.put('/activar-inactivar/:id', PacienteController.inactivateAndActivate);
 
 export default router;

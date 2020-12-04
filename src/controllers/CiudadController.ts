@@ -51,6 +51,39 @@ class CiudadController {
         }
     }
 
+    static getByDepartamento = async (req: Request, res: Response) => {
+        // Se obtiene el id que llega por parametro en la url
+        const id: string = req.params.id;
+
+        // Se obtiene instancia de la base de datos
+        const repositoryCiudad = getRepository(Ciudad);
+        try {
+            
+            const Ciudad = await repositoryCiudad.find({
+                where: [
+                    {idDepartamento: id}
+                ]
+            });
+            // Si no ecunetra el registro se lanza un error
+            if(Ciudad === undefined){
+                let error = new DataNotFoundError();
+                error.message = `Ciudad con departamento id ${id} no encontrado`;
+                error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+                throw error;
+            }
+            // Se envia datos solicitados 
+            CiudadController.sendResponse(res, Ciudad);
+
+        } catch (error) {
+            // Se envia información sobre el error
+            if(error instanceof DataNotFoundError){
+                CiudadController.sendResponse(res, null, error.statusCode, false, error.message);
+            }else{
+                CiudadController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            }
+        }
+    }
+
     static create = async (req: Request, res: Response) => {
 
         try {

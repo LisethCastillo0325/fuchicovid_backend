@@ -6,6 +6,7 @@ const router = Router();
 
 // Rutas para tipo identificación
 router.get('/', CiudadController.getAll);
+router.get('/departamento/:id', CiudadController.getByDepartamento);
 router.get('/:id', CiudadController.getById);
 router.post('/', CiudadController.create);
 router.put('/:id', CiudadController.update);

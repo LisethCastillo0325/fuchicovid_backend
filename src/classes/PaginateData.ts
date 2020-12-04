@@ -19,7 +19,7 @@ export default class PaginateData {
         if(queryBuilderPersona !== undefined){
             queryBuilderPersona.skip(skip)
             queryBuilderPersona.take(limit);
-            console.log('Paginador - queryBuilderPersona: ', queryBuilderPersona.getSql());
+            //console.log('Paginador - queryBuilderPersona: ', queryBuilderPersona.getSql());
 
             totalRecords = await queryBuilderPersona.getCount();
             totalPages   = Math.ceil(totalRecords / limit);
