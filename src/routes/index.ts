@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import ciudad from "./ciudad";
 import contactoEmergencia from "./contactoEmergencia";
 import correoIntegrante from "./correoIntegrante";
+import departamento from "./departamento";
 import direccionPersona from "./direccionPersona";
 import eps from "./eps";
 import funcionario from "./funcionario";
@@ -11,6 +13,7 @@ import medicamento from "./medicamento";
 import medicamentoLaboratorio from "./medicamentoLaboratorio";
 import paciente from "./paciente";
 import controles from "./pacienteControles";
+import pais from "./pais";
 import persona from "./persona";
 import registro from "./procesoRegistro";
 import profesional from "./profesionalSalud";
@@ -22,9 +25,6 @@ import tipoContacto from "./tipoContacto";
 import tipoIdentificacion from "./tipoIdentificacion";
 import tipoTelefono from "./tipoTelefono";
 import universidad from "./universidad";
-import ciudad from "./ciudad";
-import pais from "./pais";
-import departamento from "./departamento";
 const routes = Router();
 
 //Rutas
@@ -42,7 +42,7 @@ routes.use('/tel-persona',personaTelefonos);
 routes.use('/dir-persona',direccionPersona);
 routes.use('/med-lab',medicamentoLaboratorio);
 routes.use('/integranteH',integrante);
-routes.use('/profesional-salud',profesional);
+routes.use('/profesionalS',profesional);
 routes.use('/paciente',paciente);
 routes.use('/relacion',relacion);
 routes.use('/correo',correoIntegrante);
