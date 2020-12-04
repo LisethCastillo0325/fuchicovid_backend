@@ -16,6 +16,10 @@ class PacienteController {
             const repositoryPersona = await getRepository(Persona)
                 .createQueryBuilder("persona")
                 .innerJoinAndSelect("persona.paciente","paciente")
+                .innerJoinAndSelect("persona.idTipoIdentificacion", "tipo_identificacion")
+                .innerJoinAndSelect("paciente.idDoctorEncargado", "medico")
+                .innerJoinAndSelect("medico.idPersona2", "medico_persona")
+                .innerJoinAndSelect("paciente.idCiudadContagio", "ciudad")
                 .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
@@ -41,6 +45,10 @@ class PacienteController {
             const queryBuilderPersona = getRepository(Persona)
                 .createQueryBuilder("persona")
                 .innerJoinAndSelect("persona.paciente","paciente")
+                .innerJoinAndSelect("persona.idTipoIdentificacion", "tipo_identificacion")
+                .innerJoinAndSelect("paciente.idDoctorEncargado", "medico")
+                .innerJoinAndSelect("medico.idPersona2", "medico_persona")
+                .innerJoinAndSelect("paciente.idCiudadContagio", "ciudad")
                 .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
@@ -65,13 +73,22 @@ class PacienteController {
 
     private static setWhere (req: Request, queryBuilderPersona: SelectQueryBuilder<Persona>) {
         if(req.body.filters !== undefined){
-            if(req.body.filters.nombre !== null && req.body.filters.nombre !== ''){
-                const nombre : string = req.body.filters.nombre;
-                queryBuilderPersona.andWhere ("persona.nombre ILIKE :nombre", { nombre: `%${nombre}%` });
+            let filters = req.body.filters;
+            console.log('filters paciente: ',filters);
+            if(filters.nombre !== null && filters.nombre !== ''){
+                queryBuilderPersona.andWhere ("persona.nombre ILIKE :nombre", { nombre: `%${filters.nombre}%` });
             }
-            if(req.body.filters.estado !== null && req.body.filters.estado !== ''){
-                const estado : string = req.body.filters.estado;
-                queryBuilderPersona.andWhere("persona.estado = :estado", {estado: estado.toUpperCase()});
+            if(filters.estado !== null && filters.estado !== ''){
+                queryBuilderPersona.andWhere("persona.estado = :estado", {estado: filters.estado});
+            }
+            if(filters.numeroDocumento !== null && filters.numeroDocumento !== ''){
+                queryBuilderPersona.andWhere("persona.numeroIdentificacion LIKE :numeroIdentificacion", { numeroIdentificacion: `%${filters.numeroDocumento}%` });
+            }
+            if(filters.tipodoDumento !== null && filters.tipodoDumento !== ''){
+                queryBuilderPersona.andWhere("persona.idTipoIdentificacion = :idTipoIdentificacion", {idTipoIdentificacion: filters.tipodoDumento});
+            }
+            if(filters.ciudad !== null && filters.ciudad !== ''){
+                queryBuilderPersona.andWhere("paciente.idCiudadContagio = :idCiudadContagio", {idCiudadContagio: filters.ciudad});
             }
         }
     }
@@ -85,6 +102,10 @@ class PacienteController {
             const repositoryPersona = await getRepository(Persona)
                 .createQueryBuilder("persona")
                 .innerJoinAndSelect("persona.paciente","paciente")
+                .innerJoinAndSelect("persona.idTipoIdentificacion", "tipo_identificacion")
+                .innerJoinAndSelect("paciente.idDoctorEncargado", "medico")
+                .innerJoinAndSelect("medico.idPersona2", "medico_persona")
+                .innerJoinAndSelect("paciente.idCiudadContagio", "ciudad")
                 .leftJoinAndSelect("paciente.relacionPacienteIntegrantes","relacion_integrantes_hogar")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idParentesco","parentesco")
                 .leftJoinAndSelect("relacion_integrantes_hogar.idIntegrante","integrante_hogar")
@@ -224,7 +245,7 @@ class PacienteController {
             // commit transaction now:
             await queryRunner.commitTransaction();
 
-            // Se envia resultado las funciones de send responde causan conflicto aqui porque ya se crea una respuesta 
+            // Se envia resultado 
             PacienteController.sendResponse(res, paciente, HTTP_STATUS_CODE_CREATED, true, "Paciente actualizado correctamente");
             
         } 
