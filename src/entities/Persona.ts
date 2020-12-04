@@ -49,7 +49,7 @@ export class Persona {
   })
   estado: string | null;
 
-  @OneToOne(() => Funcionario, (funcionario) => funcionario.idPersona)
+  @OneToOne(() => Funcionario, (funcionario) => funcionario.idPersona2)
   funcionario: Funcionario;
 
   @OneToOne(

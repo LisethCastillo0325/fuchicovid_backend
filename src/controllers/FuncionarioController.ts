@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getConnection, getRepository, Like } from 'typeorm';
+import { getConnection, getRepository, Like, SelectQueryBuilder } from 'typeorm';
 import ApiResponse from '../classes/apiResponse';
 import DataNotFoundError from '../classes/errors/DataNotFoundError';
 import PaginateData from '../classes/PaginateData';
@@ -113,6 +113,12 @@ class FuncionarioController {
         try {
             const where = FuncionarioController.getWhere(req);
             const data = await PaginateData.paginator(req, Persona, {
+                join: {
+                    alias: 'persona',
+                    innerJoinAndSelect: {
+                        funcionario: "persona.funcionario"
+                    }
+                },
                 where,  
                 relations: ['idTipoIdentificacion'],
                 order: {

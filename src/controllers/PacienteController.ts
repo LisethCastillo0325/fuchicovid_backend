@@ -115,7 +115,7 @@ class PacienteController {
                 .leftJoinAndSelect("contacto_emergencia.idIntegranteHogar","contacto_integrante")
                 .leftJoinAndSelect("contacto_integrante.idPersona2","contacto_integrante_persona")
                 .where('persona.id = :id', {id})
-                .getMany();
+                .getOne();
 
             if(repositoryPersona === undefined) {
                 let error = new DataNotFoundError();
@@ -265,6 +265,44 @@ class PacienteController {
             await queryRunner.release();
         }
     }
+
+    static inactivateAndActivate = async (req: Request, res: Response) => {
+        // get a connection and create a new query runner
+        const queryRunner = getConnection().createQueryRunner();
+        // establish real database connection using our new query runner
+        await queryRunner.connect();
+        // lets now open a new transaction:
+        await queryRunner.startTransaction();
+        
+        try {
+            let {estado} : Persona = req.body;
+            // Actualizar datos de persona
+            await PersonaController.inactivateAndActivate(req, res, queryRunner);
+
+            // commit transaction now:
+            await queryRunner.commitTransaction();
+
+            // Se envia resultado 
+            PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_CREATED, true, `Paciente ${estado.toUpperCase()} correctamente`);
+            
+        } 
+        catch (error) {
+            // since we have errors let's rollback changes we made
+            await queryRunner.rollbackTransaction();
+
+             // Se envia información sobre el error
+            if(error instanceof DataNotFoundError){
+                PacienteController.sendResponse(res, null, error.statusCode, false, error.message);
+            }else{
+               PacienteController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);
+            }
+        } 
+        finally {
+            // you need to release query runner which is manually created:
+            await queryRunner.release();
+        }
+    }
+    
 
     static sendResponse(response : Response, data: any = null, code : number = HTTP_STATUS_CODE_OK, ok : boolean = true, message : string = "OK") {
         const apiResponse = new ApiResponse(response, code, ok, message, data);

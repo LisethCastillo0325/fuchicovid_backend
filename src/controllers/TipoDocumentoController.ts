@@ -13,8 +13,9 @@ class TipoIdentificacionController {
         // Se obtiene instancia de la base de datos
         const repositoryTipoIdentificacion = getRepository(TipoIdentificacion);
         try {
+            const where = TipoIdentificacionController.getWhere(req);
             // Se obtienen todos los tipos de Idenficación
-            const data = await repositoryTipoIdentificacion.find();
+            const data = await repositoryTipoIdentificacion.find({where});
             // Se envia datos solicitados 
             TipoIdentificacionController.sendResponse(res, data);
         } catch (error) {
@@ -42,14 +43,13 @@ class TipoIdentificacionController {
     private static getWhere (req: Request) {
         let where: any = {};
         if(req.body.filters !== undefined){
-            if(req.body.filters.nombre !== null && req.body.filters.nombre !== ''){
+            console.log('getWhere: ',req.body.filters.estado);
+            if(req.body.filters.nombre !== null && req.body.filters.nombre !== undefined && req.body.filters.nombre !== ''){
                 let nombre : string = req.body.filters.nombre;
-                console.log('where nombre: ', nombre);
                 where.nombre = Like("%"+ nombre.toUpperCase() +"%");
             }
             if(req.body.filters.estado !== null && req.body.filters.estado !== ''){
                 let estado : string = req.body.filters.estado;
-                console.log('where estado: ', estado);
                 where.estado = estado.toUpperCase();
             }
         }

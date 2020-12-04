@@ -13,12 +13,12 @@ class ProfesionalSaludController {
         // Se obtiene instancia de la base de datos
         
         try {
-            const repositoryPersona = getRepository(Persona);
-            repositoryPersona.createQueryBuilder("persona").innerJoinAndSelect(ProfesionalSalud,'profesional',"profesional.idPersona=persona.id")
-            .getRawMany().then(function(value){
-            ProfesionalSaludController.sendResponse(res, value);
-            });    
+            const repositoryPersona = await getRepository(Persona)
+            .createQueryBuilder("persona")
+            .innerJoinAndSelect(ProfesionalSalud,'profesional',"profesional.idPersona=persona.id")
+            .getMany();
 
+            ProfesionalSaludController.sendResponse(res, repositoryPersona);
         } catch (error) {
             // Se envia información sobre el error
             ProfesionalSaludController.sendResponse(res, null, HTTP_STATUS_CODE_BAD_REQUEST, false, error.message);

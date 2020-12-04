@@ -42,7 +42,7 @@ routes.use('/tel-persona',personaTelefonos);
 routes.use('/dir-persona',direccionPersona);
 routes.use('/med-lab',medicamentoLaboratorio);
 routes.use('/integranteH',integrante);
-routes.use('/profesionalS',profesional);
+routes.use('/profesional-salud',profesional);
 routes.use('/paciente',paciente);
 routes.use('/relacion',relacion);
 routes.use('/correo',correoIntegrante);

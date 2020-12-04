@@ -105,9 +105,35 @@ class PersonaController {
         persona.idTipoIdentificacion=idTipoIdentificacion;
         persona.fechaNacimiento=fechaNacimiento;
         // Se actualiza el objeto
-        console.log("aqui")
         return await queryRunner.manager.save(persona);
-        console.log("aca")
+    }
+
+    static inactivateAndActivate = async (req: Request, res: Response, queryRunner: QueryRunner) => {
+       
+        // Se obtiene el id que llega por parametro en la url
+        const id: string = req.params.id;
+
+        // se obtiene los datos enviados por parametro
+        let { 
+            estado
+        } : Persona = req.body;
+        // Se obtiene instancia de la base de datos
+        
+        const persona : Persona = await queryRunner.manager.findOne(Persona, id);
+        
+        //console.log('1.persona: ', persona);
+        // Si no ecunetra el registro se lanza un error
+        if(persona === undefined){
+            let error = new DataNotFoundError();
+            error.message = `Persona con id ${id} no encontrado`;
+            error.statusCode = HTTP_STATUS_CODE_NOT_FOUND;
+            throw error;
+        }
+
+        // Se construye objeto
+        persona.estado = estado;
+        // Se actualiza el objeto
+        return await queryRunner.manager.save(persona);
     }
 
     static sendResponse(response : Response, data: any = null, code : number = HTTP_STATUS_CODE_OK, ok : boolean = true, message : string = "OK") {
